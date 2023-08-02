@@ -18,19 +18,20 @@ TorrentFileParser::TorrentFileParser(const char* filePath)
         auto info   = std::get<bencode::dict>(dict["info"]);
         pieceLength = std::get<bencode::integer>(info["piece length"]);
         pieces      = std::get<bencode::string>(info["pieces"]);
+
         try
         {
-            files = std::get<bencode::list>(info["files"]);
+            std::get<multiFile>(SingleMultiFile).files = std::get<bencode::list>(info["files"]);
         }
         catch (...)
         {
             isSingle  = true;
-            fileName  = std::get<bencode::string>(info["name"]);
-            lengthOne = std::get<bencode::integer>(info["length"]);
+            std::get<singleFile>(SingleMultiFile).fileName  = std::get<bencode::string>(info["name"]);
+            std::get<singleFile>(SingleMultiFile).length = std::get<bencode::integer>(info["length"]);
             file.close();
-            return;
+            return ;
         }
-        dirName = std::get<bencode::string>(info["name"]);
+        std::get<multiFile>(SingleMultiFile).dirName = std::get<bencode::string>(info["name"]);
         file.close();
     }
     catch (...)

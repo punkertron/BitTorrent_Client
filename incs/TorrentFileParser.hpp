@@ -6,7 +6,18 @@
 
 #include "bencode.hpp"
 
-// ‘piece length’, ‘name’, ‘pieces’ (hash list), and ‘paths’ and ‘lengths’ of all individual files.
+
+struct singleFile
+{
+    std::string fileName;
+    long long length;
+};
+
+struct multiFile
+{
+    std::string dirName;
+    bencode::list files;
+};
 
 class TorrentFileParser
 {
@@ -17,13 +28,13 @@ class TorrentFileParser
 
     bool isSingle = false;
 
+    
+    std::variant<singleFile, multiFile> SingleMultiFile;
     // info from SINGLE file mode:
-    std::string fileName;
-    long long lengthOne;
+    
 
     // info from MULTIPLE file mode
-    std::string dirName;
-    bencode::list files;
+    
 
    public:
     TorrentFileParser(const char* filePath);
@@ -35,13 +46,25 @@ class TorrentFileParser
 
     const bool IsSingle() const { return isSingle; }
 
-    const std::string& getFileName() const { return fileName; }
+    const std::string& getFileName() const
+    {
+        return std::get<singleFile>(SingleMultiFile).fileName;
+    }
 
-    const long long getLengthOne() const { return lengthOne; }
+    const long long getLengthOne() const
+    {
+        return std::get<singleFile>(SingleMultiFile).length;
+    }
 
-    const std::string& getDirName() const { return dirName; }
+    const std::string& getDirName() const
+    {
+        return std::get<multiFile>(SingleMultiFile).dirName;
+    }
 
-    const bencode::list& getFiles() const { return files; }
+    const bencode::list& getFiles() const
+    {
+        return std::get<multiFile>(SingleMultiFile).files;
+    }
 };
 
-#endif  // TORRENT_FILE_PARSER
+#endif // TORRENT_FILE_PARSER

@@ -10,7 +10,7 @@ OBJS		= ${addprefix ${OBJS_PATH}/, ${OBJS_FILES}}
 
 INC_DIR		= ./incs
 INC			= ${INC_DIR} ./bencode
-INCLUDE		= $(INC:%=-I ./%)
+INCLUDE		= $(INC:%=-I %)
 
 DEPS		= ${OBJS:%.o=%.d}
 
