@@ -6,7 +6,6 @@
 
 #include "bencode.hpp"
 
-
 struct singleFile
 {
     std::string fileName;
@@ -27,6 +26,8 @@ class TorrentFileParser
     std::string pieces;
 
     bool isSingle = false;
+
+    std::string infoHash;
 
     
     std::variant<singleFile, multiFile> SingleMultiFile;

@@ -2,7 +2,8 @@ NAME		= torrent_client
 
 SRCS_PATH	= ./srcs
 SRCS_FILES	= main.cpp \
-				TorrentFileParser.cpp
+				TorrentFileParser.cpp \
+				utils.cpp
 
 OBJS_PATH	= ./objs
 OBJS_FILES	= ${SRCS_FILES:.cpp=.o}
@@ -11,6 +12,8 @@ OBJS		= ${addprefix ${OBJS_PATH}/, ${OBJS_FILES}}
 INC_DIR		= ./incs
 INC			= ${INC_DIR} ./bencode
 INCLUDE		= $(INC:%=-I %)
+
+LDLIBS		= -lcryptopp
 
 DEPS		= ${OBJS:%.o=%.d}
 
@@ -22,7 +25,7 @@ RM			= rm -rf
 all: ${NAME}
 
 ${NAME}: ${OBJS}
-	${CXX} ${CXXFLAGS} ${INCLUDE} ${OBJS} -o ${NAME}
+	${CXX} ${CXXFLAGS} ${INCLUDE} ${OBJS} ${LDLIBS} -o ${NAME}
 
 ${OBJS_PATH}/%.o : ${SRCS_PATH}/%.cpp | ${OBJS_PATH}
 	${CXX} ${CXXFLAGS} ${INCLUDE} -MMD -MP -c $< -o $@

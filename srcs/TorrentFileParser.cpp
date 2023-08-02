@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include "utils.hpp"
+
 TorrentFileParser::TorrentFileParser(const char* filePath)
 {
     std::ifstream file(filePath, std::ios::binary);
@@ -16,6 +18,7 @@ TorrentFileParser::TorrentFileParser(const char* filePath)
         auto dict   = std::get<bencode::dict>(data);
         announce    = std::get<bencode::string>(dict["announce"]);
         auto info   = std::get<bencode::dict>(dict["info"]);
+        infoHash    = sha1(bencode::encode(info));
         pieceLength = std::get<bencode::integer>(info["piece length"]);
         pieces      = std::get<bencode::string>(info["pieces"]);
 
@@ -34,6 +37,7 @@ TorrentFileParser::TorrentFileParser(const char* filePath)
         std::get<multiFile>(SingleMultiFile).dirName = std::get<bencode::string>(info["name"]);
         file.close();
     }
+
     catch (...)
     {
         file.close();
