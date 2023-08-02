@@ -1,0 +1,9 @@
+BasedOnStyle: google
+IndentWidth: 4
+ColumnLimit: 125
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments: Consecutive
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: Empty
+AllowShortLoopsOnASingleLine: false
+BreakBeforeBraces: Allman
