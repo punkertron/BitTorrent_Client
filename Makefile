@@ -2,7 +2,9 @@ NAME		= torrent_client
 
 SRCS_PATH	= ./srcs
 SRCS_FILES	= main.cpp \
+				TorrentClient.cpp \
 				TorrentFileParser.cpp \
+				PeerRetriever.cpp \
 				utils.cpp
 
 OBJS_PATH	= ./objs
@@ -10,10 +12,10 @@ OBJS_FILES	= ${SRCS_FILES:.cpp=.o}
 OBJS		= ${addprefix ${OBJS_PATH}/, ${OBJS_FILES}}
 
 INC_DIR		= ./incs
-INC			= ${INC_DIR} ./bencode
+INC			= ${INC_DIR} /usr/local/include ./bencode
 INCLUDE		= $(INC:%=-I %)
 
-LDLIBS		= -lcryptopp
+LDLIBS		= -lcryptopp -lcurl
 
 DEPS		= ${OBJS:%.o=%.d}
 

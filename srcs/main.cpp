@@ -1,13 +1,16 @@
-#include <fstream>
-
-#include "TorrentFileParser.hpp"
+#include "TorrentClient.hpp"
 
 int main(int argc, char **argv)
-{
+{   
     if (argv[1] == NULL)
-        TorrentFileParser bla("./torrents/one_file.torrent");
+    {
+        TorrentClient bla("./torrents/one_file.torrent");
+        bla.run();
+    }
     else
-        TorrentFileParser tfp(argv[1]);
+        TorrentClient tfp(argv[1]);
+
+
 
     return 0;
 }

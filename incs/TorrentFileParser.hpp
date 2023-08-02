@@ -36,6 +36,7 @@ class TorrentFileParser
 
     // info from MULTIPLE file mode
     
+    friend class PeerRetriever;
 
    public:
     TorrentFileParser(const char* filePath);
