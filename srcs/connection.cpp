@@ -30,12 +30,26 @@ int createConnection(const std::string& ip, const long long port)
 
     // FIXME: something bad with sockets
 
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags == -1) {
+        std::cerr << "error in flags" << std::endl;
+        return -1;
+    }
+
+    flags &= ~O_NONBLOCK; // Clear O_NONBLOCK flag
+    if (fcntl(sockfd, F_SETFL, flags) == -1) {
+        std::cerr << "error in FCNTL" << std::endl;
+        return -1;
+    }
+    
     struct timeval timeout;
-    timeout.tv_sec = 5; // 5 seconds timeout
+    timeout.tv_sec = 5;
     timeout.tv_usec = 0;
 
-    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout)) < 0)
-        std::abort();
+    if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) == -1) {
+        std::cerr << "error with setsockopt" << std::endl;
+        return -1;
+    }
 
     int connectResult = connect(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
     if (connectResult == -1)
@@ -61,13 +75,16 @@ void sendData(const int sockfd, const std::string& msg)
 const std::string recieveData(int sockfd, long long size)
 {
     char buffer[size]; // FIXME: if size would be 1000000000000000?
-    int bytesReceived = recv(sockfd, buffer, sizeof(buffer), 0);
+    int bytesReceived = recv(sockfd, buffer, size, 0);
     if (bytesReceived == -1) {
         std::cerr << "Error receiving data." << std::endl;
         close(sockfd);
         return std::string("");
     };
 
-    return std::string(buffer);
+    std::string res;
+    for (long long l = 0; l < size; ++l)
+        res.push_back(buffer[l]);
 
+    return res;
 }

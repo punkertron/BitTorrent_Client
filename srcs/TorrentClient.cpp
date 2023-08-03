@@ -20,7 +20,9 @@ TorrentClient::~TorrentClient() { curl_global_cleanup(); }
 void TorrentClient::run()
 {
     PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0);
-    PeerConnection pconn(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[0]);
-
-    pconn.start();
+    for (int i = 0; i < 50; ++i)
+    {
+        PeerConnection pconn(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i]);
+        pconn.start();
+    }
 }
