@@ -22,13 +22,17 @@ class PeerRetriever
     int port;
     long long fileSize;
     std::string peerId;
-    std::vector<Peer> peers;
+    std::vector<std::pair<std::string, long long> > allPeers;
+
+    std::vector<std::pair<std::string, long long> > decodeResponse(const std::string& response);
 
    public:
-    explicit PeerRetriever(const std::string& peerId, int port, long long fileSize);
+    explicit PeerRetriever(const std::string& peerId, int port, const TorrentFileParser& tfp, long long bytesDownloaded);
     ~PeerRetriever() = default;
 
-    std::vector<Peer> retrievePeers(const TorrentFileParser& tfp, long long bytesDownloaded);
+    std::vector<std::pair<std::string, long long> > retrievePeers(const TorrentFileParser& tfp, long long bytesDownloaded);
+
+    const std::vector<std::pair<std::string, long long> >& getPeers() const { return allPeers; }
 };
 
 #endif  // PEER_RETRIEVER_HPP

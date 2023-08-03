@@ -50,3 +50,32 @@ std::string urlEncodeHex(const std::string& input)
 
     return result;
 }
+
+std::string bytesToIPAddress(const std::string& bytes)
+{
+    if (bytes.length() < 4)
+        return "";
+
+    std::string ipAddress;
+    for (int i = 0; i < 4; ++i)
+    {
+        unsigned int byteValue = static_cast<unsigned char>(bytes[i]);
+        ipAddress += std::to_string(byteValue);
+        if (i < 3)
+            ipAddress += ".";
+    }
+
+    return ipAddress;
+}
+
+long long bytesToPort(const std::string& bytes)
+{
+    if (bytes.length() < 2)
+        return 0;
+
+    long long port = 0;
+    port |= static_cast<unsigned char>(bytes[0]) << 8;
+    port |= static_cast<unsigned char>(bytes[1]);
+
+    return port;
+}
