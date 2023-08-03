@@ -2,6 +2,7 @@
 
 #include <curl/curl.h>
 
+#include "PeerConnection.hpp"
 #include "PeerRetriever.hpp"
 
 #ifndef PORT
@@ -16,4 +17,10 @@ TorrentClient::TorrentClient(const char* filePath) : tfp(filePath) { curl_global
 
 TorrentClient::~TorrentClient() { curl_global_cleanup(); }
 
-void TorrentClient::run() { PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0); }
+void TorrentClient::run()
+{
+    PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0);
+    PeerConnection pconn(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[0]);
+
+    pconn.start();
+}

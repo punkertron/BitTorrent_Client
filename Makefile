@@ -5,7 +5,9 @@ SRCS_FILES	= main.cpp \
 				TorrentClient.cpp \
 				TorrentFileParser.cpp \
 				PeerRetriever.cpp \
-				utils.cpp
+				PeerConnection.cpp \
+				utils.cpp \
+				connection.cpp
 
 OBJS_PATH	= ./objs
 OBJS_FILES	= ${SRCS_FILES:.cpp=.o}

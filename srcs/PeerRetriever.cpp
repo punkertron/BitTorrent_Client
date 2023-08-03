@@ -11,10 +11,10 @@ PeerRetriever::PeerRetriever(const std::string& peerId, int port, const TorrentF
     : peerId(peerId), port(port), fileSize(tfp.getLengthOne())
 {
     allPeers = std::move(retrievePeers(tfp, bytesDownloaded));
-    for (const auto& pair : allPeers)
-    {
-        std::cerr << "Ip = " << pair.first << "\t Port = " << pair.second << std::endl;
-    }
+    // for (const auto& pair : allPeers)
+    // {
+    //     std::cerr << "Ip = " << pair.first << "\t Port = " << pair.second << std::endl;
+    // }
 }
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* output)
@@ -41,6 +41,7 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
         // std::cerr << "Query = " << query << std::endl;
 
         curl_easy_setopt(curl, CURLOPT_URL, query.c_str());
+        curl_easy_setopt(curl, CURLOPT_SERVER_RESPONSE_TIMEOUT, 3);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         res = curl_easy_perform(curl);
