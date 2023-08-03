@@ -28,11 +28,11 @@ TorrentFileParser::TorrentFileParser(const char* filePath)
         }
         catch (...)
         {
-            isSingle  = true;
-            std::get<singleFile>(SingleMultiFile).fileName  = std::get<bencode::string>(info["name"]);
-            std::get<singleFile>(SingleMultiFile).length = std::get<bencode::integer>(info["length"]);
+            isSingle                                       = true;
+            std::get<singleFile>(SingleMultiFile).fileName = std::get<bencode::string>(info["name"]);
+            std::get<singleFile>(SingleMultiFile).length   = std::get<bencode::integer>(info["length"]);
             file.close();
-            return ;
+            return;
         }
         std::get<multiFile>(SingleMultiFile).dirName = std::get<bencode::string>(info["name"]);
         file.close();

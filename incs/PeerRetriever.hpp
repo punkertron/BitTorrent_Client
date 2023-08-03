@@ -14,7 +14,7 @@ struct Peer
 
 class PeerRetriever
 {
-private:
+   private:
     PeerRetriever();
     PeerRetriever(const PeerRetriever&);
     PeerRetriever(PeerRetriever&&);
@@ -24,11 +24,11 @@ private:
     std::string peerId;
     std::vector<Peer> peers;
 
-public:
+   public:
     explicit PeerRetriever(const std::string& peerId, int port, long long fileSize);
     ~PeerRetriever() = default;
 
     std::vector<Peer> retrievePeers(const TorrentFileParser& tfp, long long bytesDownloaded);
 };
 
-#endif // PEER_RETRIEVER_HPP
+#endif  // PEER_RETRIEVER_HPP

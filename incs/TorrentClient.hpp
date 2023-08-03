@@ -5,13 +5,14 @@
 
 class TorrentClient
 {
-private:
+   private:
     TorrentFileParser tfp;
-public:
+
+   public:
     explicit TorrentClient(const char* filePath);
     ~TorrentClient();
 
     void run();
 };
 
-#endif // TORRENT_CLIENT_HPP
+#endif  // TORRENT_CLIENT_HPP

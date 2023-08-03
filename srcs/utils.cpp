@@ -15,3 +15,38 @@ const std::string sha1(const std::string& str)
 
     return hexOutput;
 }
+
+std::string hexDecode(const std::string& value)
+{
+    int hashLength = value.length();
+    std::string decodedHexString;
+    for (int i = 0; i < hashLength; i += 2)
+    {
+        std::string byte = value.substr(i, 2);
+        char c           = (char)(int)strtol(byte.c_str(), nullptr, 16);
+        decodedHexString.push_back(c);
+    }
+    return decodedHexString;
+}
+
+std::string urlEncodeHex(const std::string& input)
+{
+    std::string result;
+    const char* hexDigits = "0123456789ABCDEF";
+
+    for (char ch : input)
+    {
+        if (isalnum(ch) || ch == '-' || ch == '_' || ch == '.' || ch == '~')
+        {
+            result += ch;
+        }
+        else
+        {
+            result += '%';
+            result += hexDigits[(ch >> 4) & 0x0F];
+            result += hexDigits[ch & 0x0F];
+        }
+    }
+
+    return result;
+}

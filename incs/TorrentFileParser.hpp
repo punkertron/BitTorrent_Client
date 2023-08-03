@@ -29,14 +29,12 @@ class TorrentFileParser
 
     std::string infoHash;
 
-    
     std::variant<singleFile, multiFile> SingleMultiFile;
     // info from SINGLE file mode:
-    
 
     // info from MULTIPLE file mode
-    
-    friend class PeerRetriever;
+
+    // friend class PeerRetriever;
 
    public:
     TorrentFileParser(const char* filePath);
@@ -48,25 +46,15 @@ class TorrentFileParser
 
     const bool IsSingle() const { return isSingle; }
 
-    const std::string& getFileName() const
-    {
-        return std::get<singleFile>(SingleMultiFile).fileName;
-    }
+    const std::string& getFileName() const { return std::get<singleFile>(SingleMultiFile).fileName; }
 
-    const long long getLengthOne() const
-    {
-        return std::get<singleFile>(SingleMultiFile).length;
-    }
+    const long long getLengthOne() const { return std::get<singleFile>(SingleMultiFile).length; }
 
-    const std::string& getDirName() const
-    {
-        return std::get<multiFile>(SingleMultiFile).dirName;
-    }
+    const std::string& getDirName() const { return std::get<multiFile>(SingleMultiFile).dirName; }
 
-    const bencode::list& getFiles() const
-    {
-        return std::get<multiFile>(SingleMultiFile).files;
-    }
+    const bencode::list& getFiles() const { return std::get<multiFile>(SingleMultiFile).files; }
+
+    const std::string& getInfoHash() const { return infoHash; }
 };
 
-#endif // TORRENT_FILE_PARSER
+#endif  // TORRENT_FILE_PARSER
