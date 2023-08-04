@@ -13,5 +13,6 @@ std::string hexDecode(const std::string& value);
 std::string urlEncodeHex(const std::string& input);
 std::string bytesToIPAddress(const std::string& bytes);
 long long bytesToPort(const std::string& bytes);
+int getLengthFromMessage(const std::string& str);
 
 #endif  // UTILS_HPP

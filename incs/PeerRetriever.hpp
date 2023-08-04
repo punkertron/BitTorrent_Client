@@ -32,7 +32,10 @@ class PeerRetriever
 
     std::vector<std::pair<std::string, long long> > retrievePeers(const TorrentFileParser& tfp, long long bytesDownloaded);
 
-    const std::vector<std::pair<std::string, long long> >& getPeers() const { return allPeers; }
+    const std::vector<std::pair<std::string, long long> >& getPeers() const
+    {
+        return allPeers;
+    }
 };
 
 #endif  // PEER_RETRIEVER_HPP

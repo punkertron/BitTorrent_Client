@@ -13,9 +13,15 @@
 #define PEER_ID "-TR1000-000123456789"
 #endif
 
-TorrentClient::TorrentClient(const char* filePath) : tfp(filePath) { curl_global_init(CURL_GLOBAL_DEFAULT); }
+TorrentClient::TorrentClient(const char* filePath) : tfp(filePath)
+{
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+}
 
-TorrentClient::~TorrentClient() { curl_global_cleanup(); }
+TorrentClient::~TorrentClient()
+{
+    curl_global_cleanup();
+}
 
 void TorrentClient::run()
 {

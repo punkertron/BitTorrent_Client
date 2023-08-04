@@ -38,23 +38,50 @@ class TorrentFileParser
 
    public:
     TorrentFileParser(const char* filePath);
-    const std::string& getAnnounce() const { return announce; }
+    const std::string& getAnnounce() const
+    {
+        return announce;
+    }
 
-    const long long& getPieceLength() const { return pieceLength; }
+    const long long& getPieceLength() const
+    {
+        return pieceLength;
+    }
 
-    const std::string& getPieces() const { return pieces; }
+    const std::string& getPieces() const
+    {
+        return pieces;
+    }
 
-    const bool IsSingle() const { return isSingle; }
+    const bool IsSingle() const
+    {
+        return isSingle;
+    }
 
-    const std::string& getFileName() const { return std::get<singleFile>(SingleMultiFile).fileName; }
+    const std::string& getFileName() const
+    {
+        return std::get<singleFile>(SingleMultiFile).fileName;
+    }
 
-    const long long getLengthOne() const { return std::get<singleFile>(SingleMultiFile).length; }
+    const long long getLengthOne() const
+    {
+        return std::get<singleFile>(SingleMultiFile).length;
+    }
 
-    const std::string& getDirName() const { return std::get<multiFile>(SingleMultiFile).dirName; }
+    const std::string& getDirName() const
+    {
+        return std::get<multiFile>(SingleMultiFile).dirName;
+    }
 
-    const bencode::list& getFiles() const { return std::get<multiFile>(SingleMultiFile).files; }
+    const bencode::list& getFiles() const
+    {
+        return std::get<multiFile>(SingleMultiFile).files;
+    }
 
-    const std::string& getInfoHash() const { return infoHash; }
+    const std::string& getInfoHash() const
+    {
+        return infoHash;
+    }
 };
 
 #endif  // TORRENT_FILE_PARSER

@@ -1,9 +1,14 @@
 BasedOnStyle: google
 IndentWidth: 4
 ColumnLimit: 125
+AllowShortBlocksOnASingleLine: Never
 AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: Consecutive
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Empty
 AllowShortLoopsOnASingleLine: false
 BreakBeforeBraces: Allman
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+PackConstructorInitializers: NextLine
+BreakConstructorInitializers: AfterColon

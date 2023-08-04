@@ -7,8 +7,8 @@
 
 // #define TRACKER_TIMEOUT 15000
 
-PeerRetriever::PeerRetriever(const std::string& peerId, int port, const TorrentFileParser& tfp, long long bytesDownloaded)
-    : peerId(peerId), port(port), fileSize(tfp.getLengthOne())
+PeerRetriever::PeerRetriever(const std::string& peerId, int port, const TorrentFileParser& tfp, long long bytesDownloaded) :
+    peerId(peerId), port(port), fileSize(tfp.getLengthOne())
 {
     allPeers = std::move(retrievePeers(tfp, bytesDownloaded));
     // for (const auto& pair : allPeers)

@@ -9,11 +9,13 @@ class PeerConnection
     int sockfd;
     const std::string infoHash;
     const std::string peerId;
+    std::string peerPeerId;
     std::pair<std::string, long long> peer;
-    // bool terminated = false;
+    bool choke = true;
 
     inline std::string createHandshakeMessage() const;
     void performHandshake();
+    void recieveMessage();
 
    public:
     PeerConnection(const std::string& infoHash, const std::string& peerId, const std::pair<std::string, long long>& peer);

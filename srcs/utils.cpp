@@ -79,3 +79,16 @@ long long bytesToPort(const std::string& bytes)
 
     return port;
 }
+
+int getLengthFromMessage(const std::string& str)
+{
+    if (str.size() < 4)
+    {
+        throw std::runtime_error("String does not contain 4 bytes");
+    }
+
+    unsigned int result = (static_cast<unsigned char>(str[0]) << 24) | (static_cast<unsigned char>(str[1]) << 16) |
+                          (static_cast<unsigned char>(str[2]) << 8) | (static_cast<unsigned char>(str[3]));
+
+    return static_cast<int>(result);
+}
