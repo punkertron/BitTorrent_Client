@@ -92,3 +92,10 @@ int getLengthFromMessage(const std::string& str)
 
     return static_cast<int>(result);
 }
+
+std::string intToBytes(int x)
+{
+    std::string bytes(sizeof(int), '\0');
+    std::memcpy(&bytes[0], &x, sizeof(int));
+    return bytes;
+}

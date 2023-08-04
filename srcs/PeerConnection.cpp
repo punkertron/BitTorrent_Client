@@ -26,9 +26,10 @@ void PeerConnection::start()
     try
     {
         sockfd = createConnection(peer.first, peer.second);
-        std::cerr << "socket = " << sockfd << std::endl;
+        // std::cerr << "socket = " << sockfd << std::endl;
         performHandshake();
-        recieveMessage();
+        recieveMessage();  // BitField?
+        sendInterest();
     }
     catch (const std::runtime_error& e)
     {
@@ -71,4 +72,9 @@ void PeerConnection::recieveMessage()  // TODO: or get bitfield
 {
     Message msg(recieveData(sockfd, 0));
     std::cerr << static_cast<int>(msg.getMessageType()) << std::endl;
+}
+
+void PeerConnection::sendInterest()
+{
+    sendData(sockfd, Message(eMessageType::Interested).getMessageStr());
 }

@@ -16,6 +16,7 @@ class PeerConnection
     inline std::string createHandshakeMessage() const;
     void performHandshake();
     void recieveMessage();
+    void sendInterest();
 
    public:
     PeerConnection(const std::string& infoHash, const std::string& peerId, const std::pair<std::string, long long>& peer);

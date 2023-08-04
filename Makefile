@@ -6,6 +6,7 @@ SRCS_FILES	= main.cpp \
 				TorrentFileParser.cpp \
 				PeerRetriever.cpp \
 				PeerConnection.cpp \
+				PieceManager.cpp \
 				Message.cpp \
 				utils.cpp \
 				connection.cpp

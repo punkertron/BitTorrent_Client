@@ -2,6 +2,7 @@
 
 #include <curl/curl.h>
 
+#include "PieceManager.hpp"
 #include "PeerConnection.hpp"
 #include "PeerRetriever.hpp"
 
@@ -10,7 +11,7 @@
 #endif
 
 #ifndef PEER_ID
-#define PEER_ID "-TR1000-000123456789"
+#define PEER_ID "-TR1000-000123456789"  // should use random
 #endif
 
 TorrentClient::TorrentClient(const char* filePath) : tfp(filePath)
@@ -26,7 +27,8 @@ TorrentClient::~TorrentClient()
 void TorrentClient::run()
 {
     PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0);
-    for (int i = 0; i < 10; ++i)
+    PieceManager pieceManager(tfp);
+    for (int i = 0; i < p.getPeers().size(); ++i)
     {
         PeerConnection pconn(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i]);
         pconn.start();

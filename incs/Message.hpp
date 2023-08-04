@@ -29,7 +29,10 @@ class Message
 
    public:
     Message(const std::string& str);
+    Message(const eMessageType e, const std::string& str = "");
     ~Message() = default;
+
+    const std::string getMessageStr() const;
 
     inline bool isKeepAlive() const
     {
