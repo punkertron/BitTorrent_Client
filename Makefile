@@ -1,15 +1,17 @@
-NAME		= torrent_client
+NAME			= torrent_client
 
-SRCS_PATH	= ./srcs
-SRCS_FILES	= main.cpp \
-				TorrentClient.cpp \
-				TorrentFileParser.cpp \
-				PeerRetriever.cpp \
-				PeerConnection.cpp \
-				PieceManager.cpp \
-				Message.cpp \
-				utils.cpp \
-				connection.cpp
+DOWNLOADS_PATH	= ./downloads
+
+SRCS_PATH		= ./srcs
+SRCS_FILES		= main.cpp \
+					TorrentClient.cpp \
+					TorrentFileParser.cpp \
+					PeerRetriever.cpp \
+					PeerConnection.cpp \
+					PieceManager.cpp \
+					Message.cpp \
+					utils.cpp \
+					connection.cpp
 
 OBJS_PATH	= ./objs
 OBJS_FILES	= ${SRCS_FILES:.cpp=.o}
@@ -33,11 +35,14 @@ all: ${NAME}
 ${NAME}: ${OBJS}
 	${CXX} ${CXXFLAGS} ${INCLUDE} ${OBJS} ${LDLIBS} -o ${NAME}
 
-${OBJS_PATH}/%.o : ${SRCS_PATH}/%.cpp | ${OBJS_PATH}
+${OBJS_PATH}/%.o : ${SRCS_PATH}/%.cpp | ${OBJS_PATH} ${DOWNLOADS_PATH}
 	${CXX} ${CXXFLAGS} ${INCLUDE} -MMD -MP -c $< -o $@
 
 ${OBJS_PATH}:
 	mkdir -p ${OBJS_PATH}
+
+${DOWNLOADS_PATH}:
+	mkdir -p ${DOWNLOADS_PATH}
 
 -include ${DEPS}
 
@@ -45,9 +50,9 @@ clean:
 	${RM} ${OBJS_PATH}
 
 fclean: clean
-	${RM} ${NAME}
+	${RM} ${NAME} ${DOWNLOADS_PATH}
 
-re: fclean | ${OBJS_PATH} ${NAME}
+re: fclean | ${OBJS_PATH} ${DOWNLOADS_PATH} ${NAME}
 
 format:
 	clang-format -i ${SRCS_PATH}/* ${INC_DIR}/*

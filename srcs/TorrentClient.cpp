@@ -2,9 +2,9 @@
 
 #include <curl/curl.h>
 
-#include "PieceManager.hpp"
 #include "PeerConnection.hpp"
 #include "PeerRetriever.hpp"
+#include "PieceManager.hpp"
 
 #ifndef PORT
 #define PORT 8080
@@ -30,7 +30,7 @@ void TorrentClient::run()
     PieceManager pieceManager(tfp);
     for (int i = 0; i < p.getPeers().size(); ++i)
     {
-        PeerConnection pconn(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i]);
+        PeerConnection pconn(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i], &pieceManager);
         pconn.start();
     }
 }

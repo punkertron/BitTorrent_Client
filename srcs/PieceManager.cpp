@@ -3,20 +3,28 @@
 #include <cmath>
 
 #ifndef BLOCK_SIZE
-#define BLOCK_SIZE 16384 // 2^14
+#define BLOCK_SIZE 16384  // 2^14
 #endif
 
-PieceManager::PieceManager(const TorrentFileParser& tfp):
-    tfp(tfp)
+#ifndef DOWNLOADS_PATH
+#define DOWNLOADS_PATH "./downloads/"
+#endif
+
+PieceManager::PieceManager(const TorrentFileParser& tfp) : tfp(tfp), missingPieces(initialisePieces())
 {
-    //missingPieces = initialisePieces();
+    downloadedFile.open(DOWNLOADS_PATH + tfp.getFileName(), std::ios::binary | std::ios::out);
+}
+
+PieceManager::~PieceManager()
+{
+    downloadedFile.close();
 }
 
 static std::vector<std::string> splitPiecesHashes(const std::string& pieces)
 {
     std::vector<std::string> res;
 
-    int piecesCount = pieces.size() / 20; // Length of one HASH = 20
+    int piecesCount = pieces.size() / 20;  // Length of one HASH = 20
     res.reserve(piecesCount);
     for (int i = 0; i < piecesCount; ++i)
         res.push_back(pieces.substr(i * 20, 20));
@@ -32,7 +40,7 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
     long long totalLength = tfp.getLengthOne();
 
     long long pieceLength = tfp.getPieceLength();
-    int blockCount = std::ceil(pieceLength / BLOCK_SIZE);
+    int blockCount        = std::ceil(pieceLength / BLOCK_SIZE);
 
     for (int i = 0; i < totalPieces; ++i)
     {
@@ -41,14 +49,14 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
             ;
         }
         std::vector<std::unique_ptr<Block> > blocks;
-        
+
         blocks.reserve(blockCount);
         for (int offset = 0; offset < blockCount; ++offset)
         {
             std::unique_ptr<Block> block = std::make_unique<Block>();
-            block->piece = i;
-            block->status = missing;
-            block->offset = offset * BLOCK_SIZE;
+            block->piece                 = i;
+            block->status                = missing;
+            block->offset                = offset * BLOCK_SIZE;
             if (i == totalPieces - 1 && offset == blockCount - 1)
                 block->length = totalLength % BLOCK_SIZE;
             else
@@ -59,4 +67,9 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
         res.push_back(std::move(piece));
     }
     return res;
+}
+
+bool PieceManager::isComplete()
+{
+    return havePieces.size() == totalPieces;
 }

@@ -10,8 +10,8 @@
 #include "utils.hpp"
 
 PeerConnection::PeerConnection(const std::string& infoHash, const std::string& peerId,
-                               const std::pair<std::string, long long>& peer) :
-    infoHash(infoHash), peerId(peerId), peer(peer)
+                               const std::pair<std::string, long long>& peer, PieceManager* pieceManagerPtr) :
+    infoHash(infoHash), peerId(peerId), peer(peer), pieceManagerPtr(pieceManagerPtr)
 {
 }
 

@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "PieceManager.hpp"
+
 class PeerConnection
 {
    private:
@@ -12,6 +14,7 @@ class PeerConnection
     std::string peerPeerId;
     std::pair<std::string, long long> peer;
     bool choke = true;
+    PieceManager* pieceManagerPtr;
 
     inline std::string createHandshakeMessage() const;
     void performHandshake();
@@ -19,7 +22,8 @@ class PeerConnection
     void sendInterest();
 
    public:
-    PeerConnection(const std::string& infoHash, const std::string& peerId, const std::pair<std::string, long long>& peer);
+    PeerConnection(const std::string& infoHash, const std::string& peerId, const std::pair<std::string, long long>& peer,
+                   PieceManager* pieceManagerPtr);
     ~PeerConnection();
     void start();
 };
