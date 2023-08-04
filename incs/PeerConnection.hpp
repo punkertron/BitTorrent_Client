@@ -6,7 +6,7 @@
 class PeerConnection
 {
    private:
-    int sockfd;
+    int sockfd = -1;
     const std::string infoHash;
     const std::string peerId;
     std::string peerPeerId;

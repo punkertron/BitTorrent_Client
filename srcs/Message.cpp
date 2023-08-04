@@ -8,8 +8,8 @@ Message::Message(const std::string& str) : length(getLengthFromMessage(str))
 {
     if (length)
     {
-        MessageType         = getMessageTypeFromMessage(str);
-        std::string payload = getPayloadFromMessage(str);
+        MessageType = getMessageTypeFromMessage(str);
+        payload     = getPayloadFromMessage(str);
     }
     else
     {

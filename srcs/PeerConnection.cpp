@@ -58,8 +58,8 @@ void PeerConnection::performHandshake()
     sendData(sockfd, msg);
     std::string response = recieveData(sockfd, msg.size());
 
-    if (response.size() != 68 || msg.substr(0, 20) != response.substr(0, 20)  // check protocol
-        || msg.substr(28, 20) != response.substr(28, 20))                     // check infoHash
+    if (msg.substr(0, 20) != response.substr(0, 20)        // check protocol
+        || msg.substr(28, 20) != response.substr(28, 20))  // check infoHash
     {
         throw std::runtime_error("No handshake");
     }
@@ -69,7 +69,6 @@ void PeerConnection::performHandshake()
 
 void PeerConnection::recieveMessage()  // TODO: or get bitfield
 {
-    std::string res = recieveData(sockfd, 0);
-    Message msg(res);
+    Message msg(recieveData(sockfd, 0));
     std::cerr << static_cast<int>(msg.getMessageType()) << std::endl;
 }
