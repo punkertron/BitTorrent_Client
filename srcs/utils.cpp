@@ -30,7 +30,7 @@ std::string hexDecode(const std::string& value)
 }
 
 std::string urlEncodeHex(const std::string& input)
-{   
+{
     std::string result;
     const char* hexDigits = "0123456789ABCDEF";
 

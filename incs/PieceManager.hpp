@@ -47,10 +47,10 @@ class Piece
     bool isFull() const
     {
         return std::all_of(blocks.begin(), blocks.end(),
-        [] (const std::unique_ptr<Block>& block)
-        {
-            return block.get()->status = retrieved;
-        });
+                           [](const std::unique_ptr<Block>& block)
+                           {
+                               return block.get()->status = retrieved;
+                           });
     }
 
     void fillBlock(const int begin, const std::string& blockStr)
@@ -60,8 +60,8 @@ class Piece
             if (blocks[i].get()->offset == begin)
             {
                 blocks[i].get()->status = retrieved;
-                blocks[i].get()->data = blockStr;
-                return ;
+                blocks[i].get()->data   = blockStr;
+                return;
             }
         }
     }
@@ -81,7 +81,7 @@ class Piece
 
     Block* nextRequest()
     {
-        for (auto &block : blocks)
+        for (auto& block : blocks)
         {
             if (block->status == missing)
             {

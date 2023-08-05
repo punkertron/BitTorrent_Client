@@ -46,7 +46,7 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
     {
         if (i == totalPieces - 1)
         {
-            ; // TODO: last piece
+            ;  // TODO: last piece
         }
         std::vector<std::unique_ptr<Block> > blocks;
 
@@ -76,7 +76,7 @@ bool PieceManager::isComplete()
 
 void PieceManager::blockReceived(const std::string& peerId, const int index, const int begin, const std::string& blockStr)
 {
-    (void) peerId;
+    (void)peerId;
     Piece* ptr = missingPieces[index].get();
     ptr->fillBlock(begin, blockStr);
     if (ptr->isFull())
@@ -106,7 +106,7 @@ Block* PieceManager::nextOngoing(std::string peerId)
 
 Block* PieceManager::nextRequest(const std::string& peerId)
 {
-    (void) peerId;
+    (void)peerId;
 
     Block* block = nextOngoing(peerId);
     return block;

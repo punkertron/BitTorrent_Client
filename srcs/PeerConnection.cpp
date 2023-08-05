@@ -1,10 +1,10 @@
 #include "PeerConnection.hpp"
 
+#include <arpa/inet.h>
+
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-
-#include <arpa/inet.h>
 
 #include "Message.hpp"
 #include "connection.hpp"
@@ -127,7 +127,7 @@ void PeerConnection::requestPiece()
 
     char payLoad[12];
 
-    int index = htonl(block->piece);
+    int index  = htonl(block->piece);
     int offset = htonl(block->offset);
     int length = htonl(block->length);
     std::memcpy(payLoad, &index, sizeof(int));
@@ -137,7 +137,7 @@ void PeerConnection::requestPiece()
     std::string reqPayLoad;
     for (int i = 0; i < 12; ++i)
         reqPayLoad.push_back(payLoad[i]);
-    
+
     std::string request = Message(eMessageType::Request, reqPayLoad).getMessageStr();
     sendData(sockfd, request);
 }
