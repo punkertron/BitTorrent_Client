@@ -30,7 +30,7 @@ std::string hexDecode(const std::string& value)
 }
 
 std::string urlEncodeHex(const std::string& input)
-{
+{   
     std::string result;
     const char* hexDigits = "0123456789ABCDEF";
 
@@ -80,7 +80,7 @@ long long bytesToPort(const std::string& bytes)
     return port;
 }
 
-int getLengthFromMessage(const std::string& str)
+int getIntFromStr(const std::string& str)
 {
     if (str.size() < 4)
     {
@@ -91,6 +91,11 @@ int getLengthFromMessage(const std::string& str)
                           (static_cast<unsigned char>(str[2]) << 8) | (static_cast<unsigned char>(str[3]));
 
     return static_cast<int>(result);
+}
+
+int getLengthFromMessage(const std::string& str)
+{
+    return getIntFromStr(str);
 }
 
 std::string intToBytes(int x)

@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "Message.hpp"
 #include "PieceManager.hpp"
 
 class PeerConnection
@@ -14,12 +15,14 @@ class PeerConnection
     std::string peerPeerId;
     std::pair<std::string, long long> peer;
     bool choke = true;
+    std::string bitfield;
     PieceManager* pieceManagerPtr;
 
     inline std::string createHandshakeMessage() const;
     void performHandshake();
-    void recieveMessage();
+    Message recieveMessage();
     void sendInterest();
+    void requestPiece();
 
    public:
     PeerConnection(const std::string& infoHash, const std::string& peerId, const std::pair<std::string, long long>& peer,

@@ -46,7 +46,10 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         res = curl_easy_perform(curl);
         if (res != CURLE_OK)
+        {
+            std::cerr << "Bad curl" << std::endl;
             std::abort();
+        }
         curl_easy_cleanup(curl);
         curl = NULL;
         // std::cerr << response << std::endl;
@@ -91,6 +94,7 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::decodeResponse(co
     }
     catch (...)
     {
+        std::cerr << "Something bad with peer list!" << std::endl;
         std::abort();
     }
     return result;

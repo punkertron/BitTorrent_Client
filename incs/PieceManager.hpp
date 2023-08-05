@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "TorrentFileParser.hpp"
+#include "utils.hpp"
 
 enum BlockStatus
 {
@@ -22,10 +23,6 @@ struct Block
     int length;
     BlockStatus status;
     std::string data;
-    // Block(){};
-    // ~Block(){};
-    // Block(const Block& other) = default;
-    // Block(Block&& other) = default;
 };
 
 class Piece
@@ -41,6 +38,59 @@ class Piece
     {
     }
     ~Piece() = default;
+
+    const int getIndex() const
+    {
+        return index;
+    }
+
+    bool isFull() const
+    {
+        return std::all_of(blocks.begin(), blocks.end(),
+        [] (const std::unique_ptr<Block>& block)
+        {
+            return block.get()->status = retrieved;
+        });
+    }
+
+    void fillBlock(const int begin, const std::string& blockStr)
+    {
+        for (int i = 0; i < blocks.size(); ++i)
+        {
+            if (blocks[i].get()->offset == begin)
+            {
+                blocks[i].get()->status = retrieved;
+                blocks[i].get()->data = blockStr;
+                return ;
+            }
+        }
+    }
+
+    bool isHashMatching() const
+    {
+        return hash == hexDecode(sha1(getData()));
+    }
+
+    const std::string getData() const
+    {
+        std::string data;
+        for (int i = 0; i < blocks.size(); ++i)
+            data += blocks[i].get()->data;
+        return data;
+    }
+
+    Block* nextRequest()
+    {
+        for (auto &block : blocks)
+        {
+            if (block->status == missing)
+            {
+                block->status = pending;
+                return block.get();
+            }
+        }
+        return nullptr;
+    }
 };
 
 class PieceManager
@@ -61,6 +111,11 @@ class PieceManager
     ~PieceManager();
 
     bool isComplete();
+    void blockReceived(const std::string& peerId, const int index, const int begin, const std::string& blockStr);
+    void writeToFile(Piece* ptr);
+
+    Block* nextRequest(const std::string& peerId);
+    Block* nextOngoing(std::string peerId);
 };
 
 #endif  // PIECE_MANAGER_HPP

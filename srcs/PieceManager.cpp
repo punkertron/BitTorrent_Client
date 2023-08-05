@@ -46,7 +46,7 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
     {
         if (i == totalPieces - 1)
         {
-            ;
+            ; // TODO: last piece
         }
         std::vector<std::unique_ptr<Block> > blocks;
 
@@ -72,4 +72,42 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
 bool PieceManager::isComplete()
 {
     return havePieces.size() == totalPieces;
+}
+
+void PieceManager::blockReceived(const std::string& peerId, const int index, const int begin, const std::string& blockStr)
+{
+    (void) peerId;
+    Piece* ptr = missingPieces[index].get();
+    ptr->fillBlock(begin, blockStr);
+    if (ptr->isFull())
+    {
+        if (ptr->isHashMatching())
+        {
+            writeToFile(ptr);
+        }
+    }
+}
+
+void PieceManager::writeToFile(Piece* ptr)
+{
+    long long position = tfp.getPieceLength() * ptr->getIndex();
+    downloadedFile.seekp(position);
+    downloadedFile << ptr->getData();
+}
+
+Block* PieceManager::nextOngoing(std::string peerId)
+{
+    for (int i = 0; i < missingPieces.size(); ++i)
+    {
+        Block* block = missingPieces[i].get()->nextRequest();
+        return block;
+    }
+}
+
+Block* PieceManager::nextRequest(const std::string& peerId)
+{
+    (void) peerId;
+
+    Block* block = nextOngoing(peerId);
+    return block;
 }

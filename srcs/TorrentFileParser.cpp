@@ -9,6 +9,7 @@ TorrentFileParser::TorrentFileParser(const char* filePath)
     std::ifstream file(filePath, std::ios::binary);
     if (!file.is_open())
     {
+        std::cerr << "Cannot open .torrent file" << std::endl;
         std::abort();
     }
 
@@ -40,6 +41,7 @@ TorrentFileParser::TorrentFileParser(const char* filePath)
 
     catch (...)
     {
+        std::cerr << "Something really bad!" << std::endl;
         file.close();
         std::abort();
     }
