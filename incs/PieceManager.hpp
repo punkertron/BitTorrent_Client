@@ -4,6 +4,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "Piece.hpp"
@@ -15,6 +16,7 @@ class PieceManager
    private:
     const TorrentFileParser tfp = nullptr;
     int totalPieces;
+    std::unordered_map<std::string, std::vector<bool> > peerBitfield;  // vector<bool> is efficient
 
     std::vector<std::unique_ptr<Piece> > missingPieces;
     std::vector<std::unique_ptr<Piece> > ongoingPieces;
@@ -26,6 +28,8 @@ class PieceManager
    public:
     PieceManager(const TorrentFileParser& tfp);
     ~PieceManager();
+
+    void addPeerBitfield(const std::string& peerPeerId, const std::string& payload);
 
     bool isComplete();
     void blockReceived(const std::string& peerId, const int index, const int begin, const std::string& blockStr);

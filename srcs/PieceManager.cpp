@@ -69,6 +69,24 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
     return res;
 }
 
+void PieceManager::addPeerBitfield(const std::string& peerPeerId, const std::string& payload)
+{
+    std::vector<bool> bits;
+    bits.resize(payload.size() * 8);
+
+    for (int i = 0; i < payload.size(); ++i)
+    {
+        unsigned char byte = payload[i];
+        for (int j = 0; j < 8; ++j)
+        {
+            int bitPos   = i * 8 + j;
+            bits[bitPos] = (byte >> (7 - j)) & 1;
+        }
+    }
+
+    peerBitfield.insert({peerPeerId, bits});
+}
+
 bool PieceManager::isComplete()
 {
     return havePieces.size() == totalPieces;

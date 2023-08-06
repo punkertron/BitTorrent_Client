@@ -30,48 +30,53 @@ void PeerConnection::start()
         sockfd = createConnection(peer.first, peer.second);
         std::cerr << "socket = " << sockfd << std::endl;
         performHandshake();
-        Message msg(recieveMessage());  // BitField?
-        if (msg.getMessageType() == eMessageType::Bitfield)
+        Message msg(recieveMessage());
+        if (msg.getMessageType() == eMessageType::Bitfield)  // TODO: BitField only?
         {
-            bitfield = msg.getPayload();
+            pieceManagerPtr->addPeerBitfield(peerPeerId, msg.getPayload());
+        }
+        else
+        {
+            throw std::runtime_error("No Bitfield");
         }
         sendInterest();
-        while (!pieceManagerPtr->isComplete())
-        {
-            msg = recieveMessage();
-            std::cerr << "Message type = " << (int)msg.getMessageType() << std::endl;
-            switch (msg.getMessageType())
-            {
-                case eMessageType::Choke:
-                    choke = true;
-                    break;
-                case eMessageType::Unchoke:
-                    choke = false;
-                    std::cerr << "Choke = false" << std::endl;
-                    break;
-                case eMessageType::Piece:
-                {
-                    std::cerr << "WOWO" << std::endl;
-                    std::string payload = payload;
-                    int index           = getIntFromStr(payload.substr(0, 4));
-                    int begin           = getIntFromStr(payload.substr(4, 4));
-                    std::string blockStr(payload.substr(8));
-                    pieceManagerPtr->blockReceived(peerId, index, begin, blockStr);
-                }
 
-                    // case eMessageType::Have:
-                    //     // TODO:
-                    //     break;
+        // while (!pieceManagerPtr->isComplete())
+        // {
+        //     msg = recieveMessage();
+        //     std::cerr << "Message type = " << (int)msg.getMessageType() << std::endl;
+        //     switch (msg.getMessageType())
+        //     {
+        //         case eMessageType::Choke:
+        //             choke = true;
+        //             break;
+        //         case eMessageType::Unchoke:
+        //             choke = false;
+        //             std::cerr << "Choke = false" << std::endl;
+        //             break;
+        //         case eMessageType::Piece:
+        //         {
+        //             std::cerr << "WOWO" << std::endl;
+        //             std::string payload = payload;
+        //             int index           = getIntFromStr(payload.substr(0, 4));
+        //             int begin           = getIntFromStr(payload.substr(4, 4));
+        //             std::string blockStr(payload.substr(8));
+        //             pieceManagerPtr->blockReceived(peerId, index, begin, blockStr);
+        //         }
 
-                default:
-                    break;
-            }
-            if (!choke)
-            {
-                requestPiece();
-                std::cerr << "Boo" << std::endl;
-            }
-        }
+        //             // case eMessageType::Have:
+        //             //     // TODO:
+        //             //     break;
+
+        //         default:
+        //             break;
+        //     }
+        //     if (!choke)
+        //     {
+        //         requestPiece();
+        //         std::cerr << "Boo" << std::endl;
+        //     }
+        // }
     }
     catch (const std::runtime_error& e)
     {
