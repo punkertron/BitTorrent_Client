@@ -30,10 +30,11 @@ std::vector<std::unique_ptr<Piece::Block> > Piece::setBlocks(int blockCount, lon
 
 bool Piece::isFull() const
 {
+    // std::cerr << "size = " << blocks.size() << std::endl;
     return std::all_of(blocks.begin(), blocks.end(),
                        [](const std::unique_ptr<Block>& block)
                        {
-                           return block.get()->status = BlockStatus::retrieved;
+                           return block.get()->status == BlockStatus::retrieved;
                        });
 }
 
@@ -44,5 +45,33 @@ const std::string Piece::requestBlock()
         if (blocks[i].get()->status == BlockStatus::missing)
             return intToBytes(htonl(blocks[i].get()->offset)) + intToBytes(htonl(blocks[i].get()->length));
     }
+    throw std::runtime_error("No block to request");
     return ("");
+}
+
+void Piece::fillData(int begin, const std::string& data)
+{
+    for (int i = 0; i < blocks.size(); ++i)
+    {
+        if (blocks[i].get()->offset == begin)
+        {
+            if (blocks[i].get()->status == BlockStatus::retrieved)
+                throw std::runtime_error("Block already there");
+            else
+                blocks[i].get()->data = data;
+            blocks[i].get()->status = BlockStatus::retrieved;
+            return;
+        }
+    }
+    throw std::runtime_error("No such offset in blocks");
+}
+
+bool Piece::isHashChecked(std::string& dataToFile)
+{
+    for (int i = 0; i < blocks.size(); ++i)
+        dataToFile += blocks[i].get()->data;
+
+    if (hexDecode(sha1(dataToFile)) != hash)
+        throw std::runtime_error("Hash check failed");
+    return true;
 }

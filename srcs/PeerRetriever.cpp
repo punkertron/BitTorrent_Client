@@ -41,7 +41,8 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
         // std::cerr << "Query = " << query << std::endl;
 
         curl_easy_setopt(curl, CURLOPT_URL, query.c_str());
-        curl_easy_setopt(curl, CURLOPT_SERVER_RESPONSE_TIMEOUT, 3);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15);
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "TorrentClient");
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         res = curl_easy_perform(curl);
@@ -52,7 +53,6 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
         }
         curl_easy_cleanup(curl);
         curl = NULL;
-        // std::cerr << response << std::endl;
     }
     return decodeResponse(response);
 }

@@ -55,7 +55,7 @@ int createConnection(const std::string& ip, const long long port)
     int connectResult = connect(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
     if (connectResult == -1)
     {
-        throw std::runtime_error("Error connecting to the server");
+        throw std::runtime_error("Error connecting to the peer");
     }
 
     return sockfd;
@@ -85,11 +85,17 @@ const std::string recieveData(int sockfd, int size)
     if (!size)
     {
         char buffer[4];
-        int bytesReceived = recv(sockfd, buffer, 4, 0);
-        if (bytesReceived != 4)
+
+        int bytesReceived = 0;
+        int sumReceived   = 0;
+        while (sumReceived < 4)  // Or <
         {
-            throw std::runtime_error("Error receiving data");
+            bytesReceived = recv(sockfd, buffer + sumReceived, 4 - sumReceived, 0);
+            if (bytesReceived == -1)
+                throw std::runtime_error("Error receiving data");
+            sumReceived += bytesReceived;
         }
+
         std::string res(4, '\0');
         for (int i = 0; i < 4; ++i)
             res[i] = buffer[i];
@@ -107,15 +113,14 @@ const std::string recieveData(int sockfd, int size)
             throw std::runtime_error("Bad allocation in receiving data");
         }
 
-        int sumReceived = 0;
-        while (sumReceived != size)
+        sumReceived = 0;
+        while (sumReceived < size)  // Or <
         {
-            bytesReceived = recv(sockfd, bigBuffer.get() + sumReceived, size, 0);
+            bytesReceived = recv(sockfd, bigBuffer.get() + sumReceived, size - sumReceived, 0);
             if (bytesReceived == -1)
                 throw std::runtime_error("Error receiving data");
             sumReceived += bytesReceived;
         }
-        // std::cerr << "size = " << size << " sum = " << sumReceived << std::endl;
 
         size += 4;
         std::string bigRes;
@@ -126,14 +131,20 @@ const std::string recieveData(int sockfd, int size)
             bigRes.push_back(bigBuffer[i - 4]);
         return bigRes;
     }
-    else
+    else  // Handshake
     {
         char buffer[size];  // size = 68
-        int bytesReceived = recv(sockfd, buffer, size, 0);
-        if (bytesReceived != size)
+
+        int bytesReceived = 0;
+        int sumReceived   = 0;
+        while (sumReceived < size)  // Or <
         {
-            throw std::runtime_error("Error receiving data");
+            bytesReceived = recv(sockfd, buffer + sumReceived, size - sumReceived, 0);
+            if (bytesReceived == -1)
+                throw std::runtime_error("Error receiving data");
+            sumReceived += bytesReceived;
         }
+
         std::string res(size, '\0');
         for (int i = 0; i < size; ++i)
             res[i] = buffer[i];

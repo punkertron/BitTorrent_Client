@@ -41,7 +41,9 @@ class Piece
 
     const int getIndex() const;
     bool isFull() const;
+    bool isHashChecked(std::string& dataToFile);
     const std::string requestBlock();
+    void fillData(int begin, const std::string& data);
 };
 
 #endif  // PIECE_HPP

@@ -1,6 +1,7 @@
 #include "PieceManager.hpp"
 
 #include <arpa/inet.h>
+#include <unistd.h>
 
 #include <cmath>
 
@@ -73,11 +74,29 @@ void PieceManager::addPeerBitfield(const std::string& peerPeerId, const std::str
 
 bool PieceManager::isComplete()
 {
-    return false;  // TODO: havePieces.size() == totalPieces;
+    // std::cerr << totalDownloaded << '|' << totalPieces << std::endl;
+    if (totalDownloaded == totalPieces - 1)
+    {
+        std::cerr << "Download is done!!!!!" << std::endl;
+        exit(EXIT_SUCCESS);  // FIXME:: ?
+    }
+
+    if (std::all_of(Pieces.begin(), Pieces.end(),
+                    [](const std::unique_ptr<Piece>& piece)
+                    {
+                        return piece == nullptr;
+                    }))
+    {
+        std::cerr << "Download is done!!!!!" << std::endl;
+        exit(EXIT_SUCCESS);  // FIXME:: ?
+    }
+
+    return false;
 }
 
 const std::string PieceManager::requestPiece(const std::string& peerPeerId)
 {
+    bool b = isComplete();  // FIXME:: change this
     std::vector<bool> bitfield(peerBitfield[peerPeerId]);
     for (int i = 0; i < totalPieces; ++i)
     {
@@ -87,5 +106,25 @@ const std::string PieceManager::requestPiece(const std::string& peerPeerId)
             return intToBytes(htonl(i)) + blockInfo;
         }
     }
+    throw std::runtime_error("No piece");
     return ("");
+}
+
+void PieceManager::blockReceived(int index, int begin, const std::string& blockStr)
+{
+    Piece* ptr = Pieces[index].get();
+    ptr->fillData(begin, blockStr);
+    std::string dataToFile;
+    if (ptr->isFull() && ptr->isHashChecked(dataToFile))
+    {
+        writeDataToFile(index, dataToFile);
+        Pieces[index] = nullptr;
+        ++totalDownloaded;
+    }
+}
+
+void PieceManager::writeDataToFile(int index, const std::string& dataToFile)
+{
+    downloadedFile.seekp(index * tfp.getPieceLength());
+    downloadedFile << dataToFile;
 }
