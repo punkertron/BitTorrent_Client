@@ -1,5 +1,7 @@
 #include "Message.hpp"
 
+#include <arpa/inet.h>
+
 #include <stdexcept>
 
 #include "utils.hpp"
@@ -38,5 +40,5 @@ const std::string Message::getPayloadFromMessage(const std::string& str)
 
 const std::string Message::getMessageStr() const
 {
-    return intToBytes(length) + static_cast<char>(MessageType) + payload;
+    return intToBytes(htonl(length)) + static_cast<char>(MessageType) + payload;
 }

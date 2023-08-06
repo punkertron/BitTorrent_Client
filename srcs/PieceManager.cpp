@@ -1,5 +1,7 @@
 #include "PieceManager.hpp"
 
+#include <arpa/inet.h>
+
 #include <cmath>
 
 #ifndef BLOCK_SIZE
@@ -10,9 +12,11 @@
 #define DOWNLOADS_PATH "./downloads/"
 #endif
 
-PieceManager::PieceManager(const TorrentFileParser& tfp) : tfp(tfp), missingPieces(initialisePieces())
+PieceManager::PieceManager(const TorrentFileParser& tfp) : tfp(tfp), Pieces(initialisePieces())
 {
     downloadedFile.open(DOWNLOADS_PATH + tfp.getFileName(), std::ios::binary | std::ios::out);
+    downloadedFile.seekp(tfp.getLengthOne() - 1);
+    downloadedFile.write("", 1);
 }
 
 PieceManager::~PieceManager()
@@ -54,16 +58,16 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
         for (int offset = 0; offset < blockCount; ++offset)
         {
             std::unique_ptr<Block> block = std::make_unique<Block>();
-            block->piece                 = i;
-            block->status                = BlockStatus::missing;
-            block->offset                = offset * BLOCK_SIZE;
+            // block->piece                 = i;
+            block->status = BlockStatus::missing;
+            block->offset = offset * BLOCK_SIZE;
             if (i == totalPieces - 1 && offset == blockCount - 1)
                 block->length = totalLength % BLOCK_SIZE;
             else
-                block->length = totalLength;
+                block->length = BLOCK_SIZE;
             blocks.push_back(std::move(block));
         }
-        std::unique_ptr<Piece> piece = std::make_unique<Piece>(i, std::move(blocks), pieceHashes[i]);
+        std::unique_ptr<Piece> piece = std::make_unique<Piece>(std::move(blocks), pieceHashes[i]);
         res.push_back(std::move(piece));
     }
     return res;
@@ -89,43 +93,29 @@ void PieceManager::addPeerBitfield(const std::string& peerPeerId, const std::str
 
 bool PieceManager::isComplete()
 {
-    return havePieces.size() == totalPieces;
+    return false;  // TODO: havePieces.size() == totalPieces;
 }
 
-void PieceManager::blockReceived(const std::string& peerId, const int index, const int begin, const std::string& blockStr)
+const std::string PieceManager::requestPiece(const std::string& peerPeerId)
 {
-    (void)peerId;
-    Piece* ptr = missingPieces[index].get();
-    ptr->fillBlock(begin, blockStr);
-    if (ptr->isFull())
+    std::vector<bool> bitfield(peerBitfield[peerPeerId]);
+    for (int i = 0; i < totalPieces; ++i)
     {
-        if (ptr->isHashMatching())
+        if (Pieces[i] != nullptr && bitfield[i])
         {
-            writeToFile(ptr);
+            // std::cerr << "Index = " << i << ' ';
+            std::string blockInfo(Pieces[i].get()->requestBlock());
+
+            // uint32_t index = htonl(i);
+            // char tmp[4];
+            // std::memcpy(tmp, &index, sizeof(uint32_t));
+            // std::string res;
+            // for (int j = 0; j < 4; ++j)
+            //     res =+ tmp[j];
+            // std::cerr << "= " << getIntFromStr(blockInfo.substr(0, 4)) << std::endl;
+            // std::cerr << "= " << getIntFromStr(blockInfo.substr(4, 4)) << std::endl;
+            return intToBytes(htonl(i)) + blockInfo;
         }
     }
-}
-
-void PieceManager::writeToFile(Piece* ptr)
-{
-    long long position = tfp.getPieceLength() * ptr->getIndex();
-    downloadedFile.seekp(position);
-    downloadedFile << ptr->getData();
-}
-
-Block* PieceManager::nextOngoing(std::string peerId)
-{
-    for (int i = 0; i < missingPieces.size(); ++i)
-    {
-        Block* block = missingPieces[i].get()->nextRequest();
-        return block;
-    }
-}
-
-Block* PieceManager::nextRequest(const std::string& peerId)
-{
-    (void)peerId;
-
-    Block* block = nextOngoing(peerId);
-    return block;
+    return ("");
 }

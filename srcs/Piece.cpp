@@ -1,13 +1,21 @@
 #include "Piece.hpp"
 
-Piece::Piece(int index, std::vector<std::unique_ptr<Block> > blocks, std::string hash) :
-    index(index), blocks(std::move(blocks)), hash(hash)
-{
-}
+#include <arpa/inet.h>
 
-const int Piece::getIndex() const
+#include <cstring>
+
+// Piece::Piece(int index, std::vector<std::unique_ptr<Block> > blocks, std::string hash) :
+//     index(index), blocks(std::move(blocks)), hash(hash)
+// {
+// }
+
+// const int Piece::getIndex() const
+// {
+//     return index;
+// }
+
+Piece::Piece(std::vector<std::unique_ptr<Block> > blocks, std::string hash) : blocks(std::move(blocks)), hash(hash)
 {
-    return index;
 }
 
 bool Piece::isFull() const
@@ -19,41 +27,27 @@ bool Piece::isFull() const
                        });
 }
 
-void Piece::fillBlock(const int begin, const std::string& blockStr)
+const std::string Piece::requestBlock()
 {
     for (int i = 0; i < blocks.size(); ++i)
     {
-        if (blocks[i].get()->offset == begin)
+        if (blocks[i].get()->status == BlockStatus::missing)
         {
-            blocks[i].get()->status = BlockStatus::retrieved;
-            blocks[i].get()->data   = blockStr;
-            return;
+            // uint32_t offset = htonl(blocks[i].get()->offset);
+            // uint32_t length = htonl(blocks[i].get()->length);
+            // char tmp[8];
+            // std::memcpy(tmp, &offset, sizeof(uint32_t));
+            // std::memcpy(tmp + 4, &length, sizeof(uint32_t));
+            // std::string blockInfo;
+            // for (int i = 0; i < 8; i++)
+            // {
+            //     blockInfo += tmp[i];
+            // }
+
+            // std::cerr << "Offset = " << blocks[i].get()->offset << " length = " << blocks[i].get()->length << std::endl;
+            // std::cerr << "= " << getIntFromStr(intToBytes(htonl(blocks[i].get()->length))) << std::endl;
+            return intToBytes(htonl(blocks[i].get()->offset)) + intToBytes(htonl(blocks[i].get()->length));
         }
     }
-}
-
-bool Piece::isHashMatching() const
-{
-    return hash == hexDecode(sha1(getData()));
-}
-
-const std::string Piece::getData() const
-{
-    std::string data;
-    for (int i = 0; i < blocks.size(); ++i)
-        data += blocks[i].get()->data;
-    return data;
-}
-
-Block* Piece::nextRequest()
-{
-    for (auto& block : blocks)
-    {
-        if (block->status == BlockStatus::missing)
-        {
-            block->status = BlockStatus::pending;
-            return block.get();
-        }
-    }
-    return nullptr;
+    return ("");
 }

@@ -12,7 +12,7 @@ enum class BlockStatus : int
 
 struct Block
 {
-    int piece;
+    // int piece;
     int offset;
     int length;
     BlockStatus status;

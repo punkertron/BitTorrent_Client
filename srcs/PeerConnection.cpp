@@ -41,42 +41,44 @@ void PeerConnection::start()
         }
         sendInterest();
 
-        // while (!pieceManagerPtr->isComplete())
-        // {
-        //     msg = recieveMessage();
-        //     std::cerr << "Message type = " << (int)msg.getMessageType() << std::endl;
-        //     switch (msg.getMessageType())
-        //     {
-        //         case eMessageType::Choke:
-        //             choke = true;
-        //             break;
-        //         case eMessageType::Unchoke:
-        //             choke = false;
-        //             std::cerr << "Choke = false" << std::endl;
-        //             break;
-        //         case eMessageType::Piece:
-        //         {
-        //             std::cerr << "WOWO" << std::endl;
-        //             std::string payload = payload;
-        //             int index           = getIntFromStr(payload.substr(0, 4));
-        //             int begin           = getIntFromStr(payload.substr(4, 4));
-        //             std::string blockStr(payload.substr(8));
-        //             pieceManagerPtr->blockReceived(peerId, index, begin, blockStr);
-        //         }
+        while (!pieceManagerPtr->isComplete())
+        {
+            std::cerr << "I am here!" << std::endl;
+            msg = recieveMessage();
+            std::cerr << "Message type = " << (int)msg.getMessageType() << std::endl;
+            switch (msg.getMessageType())
+            {
+                case eMessageType::Choke:
+                    choke = true;
+                    break;
+                case eMessageType::Unchoke:
+                    choke = false;
+                    break;
+                case eMessageType::Piece:
+                {
+                    std::cerr << "Receive piece" << std::endl;
+                    std::string payload = msg.getPayload();
+                    int index           = getIntFromStr(payload.substr(0, 4));
+                    int begin           = getIntFromStr(payload.substr(4, 4));
+                    std::string blockStr(payload.substr(8));
+                    std::cerr << blockStr << std::endl;
+                    std::abort();
+                    // pieceManagerPtr->blockReceived(peerId, index, begin, blockStr);
+                }
 
-        //             // case eMessageType::Have:
-        //             //     // TODO:
-        //             //     break;
+                    // case eMessageType::Have:
+                    //     // TODO:
+                    //     break;
 
-        //         default:
-        //             break;
-        //     }
-        //     if (!choke)
-        //     {
-        //         requestPiece();
-        //         std::cerr << "Boo" << std::endl;
-        //     }
-        // }
+                default:
+                    break;
+            }
+            if (!choke)
+            {
+                requestPiece();
+                std::cerr << "Request Piece" << std::endl;
+            }
+        }
     }
     catch (const std::runtime_error& e)
     {
@@ -128,21 +130,11 @@ void PeerConnection::sendInterest()
 
 void PeerConnection::requestPiece()
 {
-    Block* block = pieceManagerPtr->nextRequest(peerId);
-
-    char payLoad[12];
-
-    int index  = htonl(block->piece);
-    int offset = htonl(block->offset);
-    int length = htonl(block->length);
-    std::memcpy(payLoad, &index, sizeof(int));
-    std::memcpy(payLoad + 4, &offset, sizeof(int));
-    std::memcpy(payLoad + 8, &length, sizeof(int));
-
-    std::string reqPayLoad;
-    for (int i = 0; i < 12; ++i)
-        reqPayLoad.push_back(payLoad[i]);
-
-    std::string request = Message(eMessageType::Request, reqPayLoad).getMessageStr();
+    std::string request = Message(eMessageType::Request, pieceManagerPtr->requestPiece(peerPeerId)).getMessageStr();
+    // std::cerr << "-----------------------" << std::endl;
+    // std::cerr << getIntFromStr(request.substr(0, 4)) << std::endl;
+    // std::cerr << getIntFromStr(request.substr(5, 4)) << std::endl;
+    // std::cerr << getIntFromStr(request.substr(9, 4)) << std::endl;
+    // std::cerr << getIntFromStr(request.substr(13, 4)) << std::endl;
     sendData(sockfd, request);
 }

@@ -82,6 +82,13 @@ long long bytesToPort(const std::string& bytes)
 
 int getIntFromStr(const std::string& str)
 {
+    // if (str.size() != 4) {
+    //     throw std::runtime_error("Invalid input: fourBytesString must be 4 bytes long.");
+    // }
+    // int result;
+    // std::memcpy(&result, str.data(), sizeof(int)); // Copy the bytes from the string to the integer
+    // return result;
+
     if (str.size() < 4)
     {
         throw std::runtime_error("String does not contain 4 bytes");

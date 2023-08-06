@@ -18,9 +18,11 @@ class PieceManager
     int totalPieces;
     std::unordered_map<std::string, std::vector<bool> > peerBitfield;  // vector<bool> is efficient
 
-    std::vector<std::unique_ptr<Piece> > missingPieces;
-    std::vector<std::unique_ptr<Piece> > ongoingPieces;
-    std::vector<std::unique_ptr<Piece> > havePieces;
+    std::vector<std::unique_ptr<Piece> > Pieces;
+
+    // std::vector<std::unique_ptr<Piece> > ongoingPieces;
+    // std::vector<std::unique_ptr<Piece> > havePieces;
+
     std::ofstream downloadedFile;
 
     std::vector<std::unique_ptr<Piece> > initialisePieces();
@@ -31,12 +33,9 @@ class PieceManager
 
     void addPeerBitfield(const std::string& peerPeerId, const std::string& payload);
 
-    bool isComplete();
-    void blockReceived(const std::string& peerId, const int index, const int begin, const std::string& blockStr);
-    void writeToFile(Piece* ptr);
+    const std::string requestPiece(const std::string& peerPeerId);
 
-    Block* nextRequest(const std::string& peerId);
-    Block* nextOngoing(std::string peerId);
+    bool isComplete();
 };
 
 #endif  // PIECE_MANAGER_HPP

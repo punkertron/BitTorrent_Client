@@ -63,7 +63,17 @@ int createConnection(const std::string& ip, const long long port)
 
 void sendData(const int sockfd, const std::string& msg)
 {
-    int sent = send(sockfd, msg.c_str(), msg.size(), 0);
+    // int sent = send(sockfd, msg.c_str(), msg.size(), 0);
+    // if (sent == 1)
+    // {
+    //     throw std::runtime_error("Error sending data");
+    // }
+
+    int n = msg.size();
+    char buffer[n];
+    for (int i = 0; i < n; ++i)
+        buffer[i] = msg[i];
+    int sent = send(sockfd, buffer, n, 0);
     if (sent == 1)
     {
         throw std::runtime_error("Error sending data");
@@ -78,6 +88,7 @@ const std::string recieveData(int sockfd, int size)
         int bytesReceived = recv(sockfd, buffer, 4, 0);
         if (bytesReceived != 4)
         {
+            std::cerr << "What" << std::endl;
             throw std::runtime_error("Error receiving data");
         }
         std::string res(4, '\0');
@@ -97,11 +108,15 @@ const std::string recieveData(int sockfd, int size)
             throw std::runtime_error("Bad allocation in receiving data");
         }
 
-        bytesReceived = recv(sockfd, bigBuffer.get(), size, 0);
-        if (bytesReceived != size)
+        int sumReceived = 0;
+        while (sumReceived != size)
         {
-            throw std::runtime_error("Error receiving data");
+            bytesReceived = recv(sockfd, bigBuffer.get() + sumReceived, size, 0);
+            if (bytesReceived == -1)
+                throw std::runtime_error("Error receiving data");
+            sumReceived += bytesReceived;
         }
+        // std::cerr << "size = " << size << " sum = " << sumReceived << std::endl;
 
         size += 4;
         std::string bigRes;
