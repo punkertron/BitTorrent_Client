@@ -4,10 +4,6 @@
 
 #include <cmath>
 
-#ifndef BLOCK_SIZE
-#define BLOCK_SIZE 16384  // 2^14
-#endif
-
 #ifndef DOWNLOADS_PATH
 #define DOWNLOADS_PATH "./downloads/"
 #endif
@@ -50,25 +46,10 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
     {
         if (i == totalPieces - 1)
         {
-            ;  // TODO: last piece
+            if ((totalLength % pieceLength) != 0)
+                blockCount = std::ceil((totalLength % pieceLength) / BLOCK_SIZE);
         }
-        std::vector<std::unique_ptr<Block> > blocks;
-
-        blocks.reserve(blockCount);
-        for (int offset = 0; offset < blockCount; ++offset)
-        {
-            std::unique_ptr<Block> block = std::make_unique<Block>();
-            // block->piece                 = i;
-            block->status = BlockStatus::missing;
-            block->offset = offset * BLOCK_SIZE;
-            if (i == totalPieces - 1 && offset == blockCount - 1)
-                block->length = totalLength % BLOCK_SIZE;
-            else
-                block->length = BLOCK_SIZE;
-            blocks.push_back(std::move(block));
-        }
-        std::unique_ptr<Piece> piece = std::make_unique<Piece>(std::move(blocks), pieceHashes[i]);
-        res.push_back(std::move(piece));
+        res.push_back(std::move(std::make_unique<Piece>(blockCount, totalLength, pieceHashes[i], false)));
     }
     return res;
 }
@@ -87,7 +68,6 @@ void PieceManager::addPeerBitfield(const std::string& peerPeerId, const std::str
             bits[bitPos] = (byte >> (7 - j)) & 1;
         }
     }
-
     peerBitfield.insert({peerPeerId, bits});
 }
 
@@ -103,17 +83,7 @@ const std::string PieceManager::requestPiece(const std::string& peerPeerId)
     {
         if (Pieces[i] != nullptr && bitfield[i])
         {
-            // std::cerr << "Index = " << i << ' ';
             std::string blockInfo(Pieces[i].get()->requestBlock());
-
-            // uint32_t index = htonl(i);
-            // char tmp[4];
-            // std::memcpy(tmp, &index, sizeof(uint32_t));
-            // std::string res;
-            // for (int j = 0; j < 4; ++j)
-            //     res =+ tmp[j];
-            // std::cerr << "= " << getIntFromStr(blockInfo.substr(0, 4)) << std::endl;
-            // std::cerr << "= " << getIntFromStr(blockInfo.substr(4, 4)) << std::endl;
             return intToBytes(htonl(i)) + blockInfo;
         }
     }

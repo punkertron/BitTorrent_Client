@@ -14,7 +14,8 @@ class PeerConnection
     const std::string peerId;
     std::string peerPeerId;
     std::pair<std::string, long long> peer;
-    bool choke = true;
+    bool choke          = true;
+    bool requestPending = false;
     std::string bitfield;
     PieceManager* pieceManagerPtr;
 

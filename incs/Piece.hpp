@@ -6,26 +6,41 @@
 #include <string>
 #include <vector>
 
-#include "Block.hpp"
 #include "utils.hpp"
+
+#ifndef BLOCK_SIZE
+#define BLOCK_SIZE 16384  // 2^14
+#endif
 
 class Piece
 {
    private:
-    // const int index;
+    enum class BlockStatus : int
+    {
+        missing   = 0,
+        pending   = 1,
+        retrieved = 2
+    };
+
+    struct Block
+    {
+        int offset;
+        int length;
+        BlockStatus status;
+        std::string data;
+    };
+
     std::vector<std::unique_ptr<Block> > blocks;
     const std::string hash;
 
-   public:
-    // Piece(int index, std::vector<std::unique_ptr<Block> > blocks, std::string hash);
+    std::vector<std::unique_ptr<Block> > setBlocks(int blockCount, long long totalLength, bool isLastPiece);
 
-    Piece(std::vector<std::unique_ptr<Block> > blocks, std::string hash);
+   public:
+    Piece(int blockCount, long long totalLength, const std::string& hash, bool isLastPiece);
     ~Piece() = default;
 
     const int getIndex() const;
-
     bool isFull() const;
-
     const std::string requestBlock();
 };
 

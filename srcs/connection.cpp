@@ -88,7 +88,6 @@ const std::string recieveData(int sockfd, int size)
         int bytesReceived = recv(sockfd, buffer, 4, 0);
         if (bytesReceived != 4)
         {
-            std::cerr << "What" << std::endl;
             throw std::runtime_error("Error receiving data");
         }
         std::string res(4, '\0');

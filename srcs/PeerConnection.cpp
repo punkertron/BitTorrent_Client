@@ -62,6 +62,7 @@ void PeerConnection::start()
                     int begin           = getIntFromStr(payload.substr(4, 4));
                     std::string blockStr(payload.substr(8));
                     std::cerr << blockStr << std::endl;
+                    requestPending = false;
                     std::abort();
                     // pieceManagerPtr->blockReceived(peerId, index, begin, blockStr);
                 }
@@ -75,8 +76,11 @@ void PeerConnection::start()
             }
             if (!choke)
             {
-                requestPiece();
-                std::cerr << "Request Piece" << std::endl;
+                if (!requestPending)
+                {
+                    requestPiece();
+                    std::cerr << "Request Piece" << std::endl;
+                }
             }
         }
     }
@@ -137,4 +141,5 @@ void PeerConnection::requestPiece()
     // std::cerr << getIntFromStr(request.substr(9, 4)) << std::endl;
     // std::cerr << getIntFromStr(request.substr(13, 4)) << std::endl;
     sendData(sockfd, request);
+    requestPending = true;
 }
