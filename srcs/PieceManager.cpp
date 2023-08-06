@@ -55,7 +55,7 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
         {
             std::unique_ptr<Block> block = std::make_unique<Block>();
             block->piece                 = i;
-            block->status                = missing;
+            block->status                = BlockStatus::missing;
             block->offset                = offset * BLOCK_SIZE;
             if (i == totalPieces - 1 && offset == blockCount - 1)
                 block->length = totalLength % BLOCK_SIZE;

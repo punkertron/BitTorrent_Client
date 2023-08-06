@@ -4,7 +4,7 @@
 
 #include "utils.hpp"
 
-TorrentFileParser::TorrentFileParser(const char* filePath)
+TorrentFileParser::TorrentFileParser(const char* filePath) : SingleMultiFile(multiFile())
 {
     std::ifstream file(filePath, std::ios::binary);
     if (!file.is_open())
@@ -29,6 +29,7 @@ TorrentFileParser::TorrentFileParser(const char* filePath)
         }
         catch (...)
         {
+            SingleMultiFile                                = singleFile();
             isSingle                                       = true;
             std::get<singleFile>(SingleMultiFile).fileName = std::get<bencode::string>(info["name"]);
             std::get<singleFile>(SingleMultiFile).length   = std::get<bencode::integer>(info["length"]);

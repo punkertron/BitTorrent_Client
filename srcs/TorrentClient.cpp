@@ -16,6 +16,11 @@
 
 TorrentClient::TorrentClient(const char* filePath) : tfp(filePath)
 {
+    if (!tfp.IsSingle())
+    {
+        std::cerr << "No mitiple files right now!" << std::endl;
+        std::abort();
+    }
     curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 

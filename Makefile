@@ -9,6 +9,7 @@ SRCS_FILES		= main.cpp \
 					PeerRetriever.cpp \
 					PeerConnection.cpp \
 					PieceManager.cpp \
+					Piece.cpp \
 					Message.cpp \
 					utils.cpp \
 					connection.cpp
