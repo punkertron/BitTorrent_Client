@@ -27,7 +27,7 @@ LDLIBS		= -lcryptopp -lcurl
 DEPS		= ${OBJS:%.o=%.d}
 
 CXX			= g++
-CXXFLAGS	= -std=c++17 -O2 #-g -fsanitize=address -fsanitize=leak -fsanitize=undefined
+CXXFLAGS	= -std=c++17 -O2 #-g -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined
 
 RM			= rm -rf
 
@@ -51,11 +51,14 @@ clean:
 	${RM} ${OBJS_PATH}
 
 fclean: clean
-	${RM} ${NAME} ${DOWNLOADS_PATH}
+	${RM} ${NAME}
+
+clean-downloads:
+	${RM} ${DOWNLOADS_PATH}
 
 re: fclean | ${OBJS_PATH} ${DOWNLOADS_PATH} ${NAME}
 
 format:
 	clang-format -i ${SRCS_PATH}/* ${INC_DIR}/*
 
-.PHONY: all clean fclean re format
+.PHONY: all clean fclean  clean-downloads re format

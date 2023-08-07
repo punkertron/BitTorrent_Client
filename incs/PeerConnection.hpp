@@ -9,6 +9,7 @@
 class PeerConnection
 {
    private:
+    const int peerIndex;
     int sockfd = -1;
     const std::string infoHash;
     const std::string peerId;
@@ -27,7 +28,7 @@ class PeerConnection
 
    public:
     PeerConnection(const std::string& infoHash, const std::string& peerId, const std::pair<std::string, long long>& peer,
-                   PieceManager* pieceManagerPtr);
+                   const int peerIndex, PieceManager* pieceManagerPtr);
     ~PeerConnection();
     void start();
 };

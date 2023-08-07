@@ -39,7 +39,6 @@ class Piece
     Piece(int blockCount, long long totalLength, const std::string& hash, bool isLastPiece);
     ~Piece() = default;
 
-    const int getIndex() const;
     bool isFull() const;
     bool isHashChecked(std::string& dataToFile);
     const std::string requestBlock();

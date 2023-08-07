@@ -4,3 +4,5 @@ objs
 .vscode
 cpr
 downloads
+test.cpp
+a.out

@@ -47,11 +47,18 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
     {
         if (i == totalPieces - 1)
         {
+            // std::cerr << "totalLength % pieceLength = " << totalLength % pieceLength << std::endl;
             if ((totalLength % pieceLength) != 0)
-                blockCount = std::ceil((totalLength % pieceLength) / BLOCK_SIZE);
+                blockCount = std::ceil(static_cast<double>((totalLength % pieceLength)) / BLOCK_SIZE);
+            // std::cerr << "BlockCount = " << blockCount << std::endl;
+            res.push_back(std::move(std::make_unique<Piece>(blockCount, totalLength, pieceHashes[i], true)));
         }
-        res.push_back(std::move(std::make_unique<Piece>(blockCount, totalLength, pieceHashes[i], false)));
+        else
+            res.push_back(std::move(std::make_unique<Piece>(blockCount, totalLength, pieceHashes[i], false)));
     }
+
+    // std::cerr << "RES SIZE = " << res.size() << std::endl;
+    // std::cerr << "TOTAL_PIECES = " << totalPieces << std::endl;
     return res;
 }
 
@@ -69,34 +76,21 @@ void PieceManager::addPeerBitfield(const std::string& peerPeerId, const std::str
             bits[bitPos] = (byte >> (7 - j)) & 1;
         }
     }
+
+    // for (auto bit : bits)
+    //     std::cerr << bit << ' ';
+    // std::cerr << std::endl;
     peerBitfield.insert({peerPeerId, bits});
 }
 
 bool PieceManager::isComplete()
 {
-    // std::cerr << totalDownloaded << '|' << totalPieces << std::endl;
-    if (totalDownloaded == totalPieces - 1)
-    {
-        std::cerr << "Download is done!!!!!" << std::endl;
-        exit(EXIT_SUCCESS);  // FIXME:: ?
-    }
-
-    if (std::all_of(Pieces.begin(), Pieces.end(),
-                    [](const std::unique_ptr<Piece>& piece)
-                    {
-                        return piece == nullptr;
-                    }))
-    {
-        std::cerr << "Download is done!!!!!" << std::endl;
-        exit(EXIT_SUCCESS);  // FIXME:: ?
-    }
-
-    return false;
+    return totalDownloaded == totalPieces;
 }
 
 const std::string PieceManager::requestPiece(const std::string& peerPeerId)
 {
-    bool b = isComplete();  // FIXME:: change this
+    bool b = isComplete();
     std::vector<bool> bitfield(peerBitfield[peerPeerId]);
     for (int i = 0; i < totalPieces; ++i)
     {
@@ -106,7 +100,7 @@ const std::string PieceManager::requestPiece(const std::string& peerPeerId)
             return intToBytes(htonl(i)) + blockInfo;
         }
     }
-    throw std::runtime_error("No piece");
+    throw std::runtime_error("No piece from this peer");
     return ("");
 }
 
@@ -115,11 +109,18 @@ void PieceManager::blockReceived(int index, int begin, const std::string& blockS
     Piece* ptr = Pieces[index].get();
     ptr->fillData(begin, blockStr);
     std::string dataToFile;
-    if (ptr->isFull() && ptr->isHashChecked(dataToFile))
+    if (ptr->isFull())
     {
-        writeDataToFile(index, dataToFile);
-        Pieces[index] = nullptr;
-        ++totalDownloaded;
+        if (ptr->isHashChecked(dataToFile))
+        {
+            writeDataToFile(index, dataToFile);
+            Pieces[index] = nullptr;
+            ++totalDownloaded;
+        }
+        else
+        {
+            ;  // TODO: if hash is not correct
+        }
     }
 }
 
@@ -127,4 +128,10 @@ void PieceManager::writeDataToFile(int index, const std::string& dataToFile)
 {
     downloadedFile.seekp(index * tfp.getPieceLength());
     downloadedFile << dataToFile;
+}
+
+void PieceManager::addToBitfield(const std::string& peerPeerId, const std::string& payload)
+{
+    int bitPos                       = getIntFromStr(payload);
+    peerBitfield[peerPeerId][bitPos] = true;
 }

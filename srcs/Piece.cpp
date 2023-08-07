@@ -20,7 +20,9 @@ std::vector<std::unique_ptr<Piece::Block> > Piece::setBlocks(int blockCount, lon
         block->status                = BlockStatus::missing;
         block->offset                = offset * BLOCK_SIZE;
         if (isLastPiece && offset == blockCount - 1)
+        {
             block->length = totalLength % BLOCK_SIZE;
+        }
         else
             block->length = BLOCK_SIZE;
         blocks.push_back(std::move(block));

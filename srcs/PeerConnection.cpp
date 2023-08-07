@@ -12,8 +12,9 @@
 #include "utils.hpp"
 
 PeerConnection::PeerConnection(const std::string& infoHash, const std::string& peerId,
-                               const std::pair<std::string, long long>& peer, PieceManager* pieceManagerPtr) :
-    infoHash(infoHash), peerId(peerId), peer(peer), pieceManagerPtr(pieceManagerPtr)
+                               const std::pair<std::string, long long>& peer, const int peerIndex,
+                               PieceManager* pieceManagerPtr) :
+    peerIndex(peerIndex), infoHash(infoHash), peerId(peerId), peer(peer), pieceManagerPtr(pieceManagerPtr)
 {
 }
 
@@ -27,7 +28,7 @@ void PeerConnection::start()
 {
     try
     {
-        sockfd = createConnection(peer.first, peer.second);
+        sockfd = createConnection(peer.first, peer.second, peerIndex);
         // std::cerr << "socket = " << sockfd << std::endl;
         performHandshake();
         Message msg(recieveMessage());
@@ -43,7 +44,6 @@ void PeerConnection::start()
 
         while (!pieceManagerPtr->isComplete())
         {
-            // std::cerr << "I am here!" << std::endl;
             msg = recieveMessage();
             // std::cerr << "Message type = " << (int)msg.getMessageType() << std::endl;
             switch (msg.getMessageType())
@@ -56,19 +56,23 @@ void PeerConnection::start()
                     break;
                 case eMessageType::Piece:
                 {
-                    // std::cerr << "Receive piece" << std::endl;
                     std::string payload = msg.getPayload();
                     int index           = getIntFromStr(payload.substr(0, 4));
                     int begin           = getIntFromStr(payload.substr(4, 4));
                     std::string blockStr(payload.substr(8));
-                    // std::cerr << blockStr << std::endl;
                     pieceManagerPtr->blockReceived(index, begin, blockStr);
+                    if (pieceManagerPtr->isComplete())
+                    {
+                        std::cerr << "Download completed!" << std::endl;
+                        exit(EXIT_SUCCESS);  // FIXME:: ?
+                    }
                     requestPending = false;
                 }
 
-                    // case eMessageType::Have:
-                    //     // TODO:
-                    //     break;
+                case eMessageType::Have:
+                    // std::cerr << "Have!" << std::endl;
+                    pieceManagerPtr->addToBitfield(peerPeerId, msg.getPayload());
+                    break;
 
                 default:
                     break;
@@ -78,7 +82,6 @@ void PeerConnection::start()
                 if (!requestPending)
                 {
                     requestPiece();
-                    // std::cerr << "Request Piece" << std::endl;
                 }
             }
         }
@@ -133,18 +136,8 @@ void PeerConnection::sendInterest()
 void PeerConnection::requestPiece()
 {
     std::string request = Message(eMessageType::Request, pieceManagerPtr->requestPiece(peerPeerId)).getMessageStr();
-    // std::cerr << "-----------------------" << std::endl;
-    //  std::cerr << getIntFromStr(request.substr(0, 4)) << std::endl;
-    //  std::cerr << request.size() << std::endl;
-    if (getIntFromStr(request.substr(5, 4)) == 155)
-    {
-        std::cerr << "Download is done!!!!!" << std::endl;
-        exit(EXIT_SUCCESS);  // FIXME:: ?
-    }
-
-    // std::cerr << getIntFromStr(request.substr(5, 4)) << std::endl;
-    // std::cerr << getIntFromStr(request.substr(9, 4)) << std::endl;
-    // std::cerr << getIntFromStr(request.substr(13, 4)) << std::endl;
+    std::cerr << getIntFromStr(request.substr(5, 4)) << std::endl;
+    std::cerr << getIntFromStr(request.substr(9, 4)) << std::endl;
     sendData(sockfd, request);
     requestPending = true;
 }

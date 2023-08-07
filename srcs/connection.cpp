@@ -12,7 +12,7 @@
 
 #include "utils.hpp"
 
-int createConnection(const std::string& ip, const long long port)
+int createConnection(const std::string& ip, const long long port, int peerIndex)
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1)
@@ -55,25 +55,16 @@ int createConnection(const std::string& ip, const long long port)
     int connectResult = connect(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
     if (connectResult == -1)
     {
-        throw std::runtime_error("Error connecting to the peer");
+        throw std::runtime_error("Error connecting to the peer " + std::to_string(peerIndex + 1));
     }
+    std::cerr << "Successful connection with the peer " + std::to_string(peerIndex + 1) << std::endl;
 
     return sockfd;
 }
 
 void sendData(const int sockfd, const std::string& msg)
 {
-    // int sent = send(sockfd, msg.c_str(), msg.size(), 0);
-    // if (sent == 1)
-    // {
-    //     throw std::runtime_error("Error sending data");
-    // }
-
-    int n = msg.size();
-    char buffer[n];
-    for (int i = 0; i < n; ++i)
-        buffer[i] = msg[i];
-    int sent = send(sockfd, buffer, n, 0);
+    int sent = send(sockfd, msg.c_str(), msg.size(), 0);
     if (sent == 1)
     {
         throw std::runtime_error("Error sending data");
@@ -82,6 +73,11 @@ void sendData(const int sockfd, const std::string& msg)
 
 const std::string recieveData(int sockfd, int size)
 {
+    // struct timeval tv;
+    // tv.tv_sec = 3;
+    // tv.tv_usec = 0;
+    // setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
     if (!size)
     {
         char buffer[4];

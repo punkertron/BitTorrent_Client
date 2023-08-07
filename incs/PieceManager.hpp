@@ -32,6 +32,7 @@ class PieceManager
 
     const std::string requestPiece(const std::string& peerPeerId);
     void blockReceived(int index, int begin, const std::string& blockStr);
+    void addToBitfield(const std::string& peerPeerId, const std::string& payload);
 
     bool isComplete();
 };

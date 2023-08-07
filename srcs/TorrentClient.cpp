@@ -32,10 +32,11 @@ TorrentClient::~TorrentClient()
 void TorrentClient::run()
 {
     PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0);
+    std::cerr << "There are " << p.getPeers().size() << " peers!" << std::endl;
     PieceManager pieceManager(tfp);
     for (int i = 0; i < p.getPeers().size(); ++i)
     {
-        PeerConnection pconn(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i], &pieceManager);
+        PeerConnection pconn(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i], i, &pieceManager);
         pconn.start();
     }
 }
