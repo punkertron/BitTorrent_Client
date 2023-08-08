@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -20,6 +21,11 @@ class PieceManager
     std::unordered_map<std::string, std::vector<bool> > peerBitfield;  // vector<bool> is efficient
     std::vector<std::unique_ptr<Piece> > Pieces;
     std::ofstream downloadedFile;
+
+    // std::mutex mutexWriteBitfield;
+    // std::mutex mutexRequest;
+    // std::mutex mutexWriteToFile;
+    std::mutex mutex;
 
     std::vector<std::unique_ptr<Piece> > initialisePieces();
     void writeDataToFile(int index, const std::string& dataToFile);

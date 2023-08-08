@@ -64,9 +64,9 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
 
 void PieceManager::addPeerBitfield(const std::string& peerPeerId, const std::string& payload)
 {
+    std::lock_guard<std::mutex> lock(mutex);
     std::vector<bool> bits;
     bits.resize(payload.size() * 8);
-
     for (int i = 0; i < payload.size(); ++i)
     {
         unsigned char byte = payload[i];
@@ -85,18 +85,21 @@ void PieceManager::addPeerBitfield(const std::string& peerPeerId, const std::str
 
 bool PieceManager::isComplete()
 {
+    std::lock_guard<std::mutex> lock(mutex);
     return totalDownloaded == totalPieces;
 }
 
 const std::string PieceManager::requestPiece(const std::string& peerPeerId)
 {
-    bool b = isComplete();
+    std::lock_guard<std::mutex> lock(mutex);
     std::vector<bool> bitfield(peerBitfield[peerPeerId]);
     for (int i = 0; i < totalPieces; ++i)
     {
-        if (Pieces[i] != nullptr && bitfield[i])
+        if (Pieces[i] != nullptr && bitfield[i] && Pieces[i]->haveMissingBlock())
         {
             std::string blockInfo(Pieces[i].get()->requestBlock());
+            // std::cerr << "Piece index = " << i << " and block offset = " << getIntFromStr(blockInfo.substr(0, 4)) <<
+            // std::endl;
             return intToBytes(htonl(i)) + blockInfo;
         }
     }
@@ -106,7 +109,9 @@ const std::string PieceManager::requestPiece(const std::string& peerPeerId)
 
 void PieceManager::blockReceived(int index, int begin, const std::string& blockStr)
 {
+    std::lock_guard<std::mutex> lock(mutex);
     Piece* ptr = Pieces[index].get();
+    // std::cerr << "Index = " << index << " begin = " << begin << std::endl;
     ptr->fillData(begin, blockStr);
     std::string dataToFile;
     if (ptr->isFull())

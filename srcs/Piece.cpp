@@ -45,7 +45,11 @@ const std::string Piece::requestBlock()
     for (int i = 0; i < blocks.size(); ++i)
     {
         if (blocks[i].get()->status == BlockStatus::missing)
+        {
+            blocks[i].get()->status = BlockStatus::pending;
+            // std::cerr << "blocks[" << i << "] has status = " << (int)blocks[i].get()->status  << std::endl;
             return intToBytes(htonl(blocks[i].get()->offset)) + intToBytes(htonl(blocks[i].get()->length));
+        }
     }
     throw std::runtime_error("No block to request");
     return ("");
@@ -53,7 +57,7 @@ const std::string Piece::requestBlock()
 
 void Piece::fillData(int begin, const std::string& data)
 {
-    for (int i = 0; i < blocks.size(); ++i)
+    for (int i = 0, n = blocks.size(); i < n; ++i)
     {
         if (blocks[i].get()->offset == begin)
         {
@@ -76,4 +80,14 @@ bool Piece::isHashChecked(std::string& dataToFile)
     if (hexDecode(sha1(dataToFile)) != hash)
         throw std::runtime_error("Hash check failed");
     return true;
+}
+
+bool Piece::haveMissingBlock() const
+{
+    for (int i = 0; i < blocks.size(); ++i)
+    {
+        if (blocks[i].get()->status == BlockStatus::missing)
+            return true;
+    }
+    return false;
 }

@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
@@ -57,7 +58,7 @@ int createConnection(const std::string& ip, const long long port, int peerIndex)
     {
         throw std::runtime_error("Error connecting to the peer " + std::to_string(peerIndex + 1));
     }
-    std::cerr << "Successful connection with the peer " + std::to_string(peerIndex + 1) << std::endl;
+    // std::cerr << "Successful connection with the peer " + std::to_string(peerIndex + 1) << std::endl;
 
     return sockfd;
 }
@@ -68,6 +69,25 @@ void sendData(const int sockfd, const std::string& msg)
     if (sent == 1)
     {
         throw std::runtime_error("Error sending data");
+    }
+}
+
+static void recvData(int sockfd, char* buffer, int size)
+{
+    int bytesReceived = 0;
+    int sumReceived   = 0;
+    auto startTime    = std::chrono::steady_clock::now();
+    while (sumReceived < size)  // Or <
+    {
+        auto diff = std::chrono::steady_clock::now() - startTime;
+        if (std::chrono::duration<double, std::milli>(diff).count() > 3000)
+        {
+            throw std::runtime_error("Read timeout from socket " + std::to_string(sockfd));
+        }
+        bytesReceived = recv(sockfd, buffer + sumReceived, size - sumReceived, 0);
+        if (bytesReceived == -1)
+            throw std::runtime_error("Error receiving data");
+        sumReceived += bytesReceived;
     }
 }
 
@@ -82,15 +102,17 @@ const std::string recieveData(int sockfd, int size)
     {
         char buffer[4];
 
-        int bytesReceived = 0;
-        int sumReceived   = 0;
-        while (sumReceived < 4)  // Or <
-        {
-            bytesReceived = recv(sockfd, buffer + sumReceived, 4 - sumReceived, 0);
-            if (bytesReceived == -1)
-                throw std::runtime_error("Error receiving data");
-            sumReceived += bytesReceived;
-        }
+        recvData(sockfd, buffer, 4);
+
+        // int bytesReceived = 0;
+        // int sumReceived   = 0;
+        // while (sumReceived < 4)  // Or <
+        // {
+        //     bytesReceived = recv(sockfd, buffer + sumReceived, 4 - sumReceived, 0);
+        //     if (bytesReceived == -1)
+        //         throw std::runtime_error("Error receiving data");
+        //     sumReceived += bytesReceived;
+        // }
 
         std::string res(4, '\0');
         for (int i = 0; i < 4; ++i)
@@ -109,14 +131,17 @@ const std::string recieveData(int sockfd, int size)
             throw std::runtime_error("Bad allocation in receiving data");
         }
 
-        sumReceived = 0;
-        while (sumReceived < size)  // Or <
-        {
-            bytesReceived = recv(sockfd, bigBuffer.get() + sumReceived, size - sumReceived, 0);
-            if (bytesReceived == -1)
-                throw std::runtime_error("Error receiving data");
-            sumReceived += bytesReceived;
-        }
+        recvData(sockfd, bigBuffer.get(), size);
+
+        // int sumReceived = 0;
+        // int bytesReceived = 0;
+        // while (sumReceived < size)  // Or <
+        // {
+        //     bytesReceived = recv(sockfd, bigBuffer.get() + sumReceived, size - sumReceived, 0);
+        //     if (bytesReceived == -1)
+        //         throw std::runtime_error("Error receiving data");
+        //     sumReceived += bytesReceived;
+        // }
 
         size += 4;
         std::string bigRes;
@@ -131,15 +156,17 @@ const std::string recieveData(int sockfd, int size)
     {
         char buffer[size];  // size = 68
 
-        int bytesReceived = 0;
-        int sumReceived   = 0;
-        while (sumReceived < size)  // Or <
-        {
-            bytesReceived = recv(sockfd, buffer + sumReceived, size - sumReceived, 0);
-            if (bytesReceived == -1)
-                throw std::runtime_error("Error receiving data");
-            sumReceived += bytesReceived;
-        }
+        // int bytesReceived = 0;
+        // int sumReceived   = 0;
+        // while (sumReceived < size)  // Or <
+        // {
+        //     bytesReceived = recv(sockfd, buffer + sumReceived, size - sumReceived, 0);
+        //     if (bytesReceived == -1)
+        //         throw std::runtime_error("Error receiving data");
+        //     sumReceived += bytesReceived;
+        // }
+
+        recvData(sockfd, buffer, size);
 
         std::string res(size, '\0');
         for (int i = 0; i < size; ++i)

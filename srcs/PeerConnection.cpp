@@ -31,8 +31,9 @@ void PeerConnection::start()
         sockfd = createConnection(peer.first, peer.second, peerIndex);
         // std::cerr << "socket = " << sockfd << std::endl;
         performHandshake();
+        // std::cerr << "I am here!" << std::endl;
         Message msg(recieveMessage());
-        if (msg.getMessageType() == eMessageType::Bitfield)  // TODO: BitField only?
+        if (msg.getMessageType() == eMessageType::Bitfield)
         {
             pieceManagerPtr->addPeerBitfield(peerPeerId, msg.getPayload());
         }
@@ -61,12 +62,13 @@ void PeerConnection::start()
                     int begin           = getIntFromStr(payload.substr(4, 4));
                     std::string blockStr(payload.substr(8));
                     pieceManagerPtr->blockReceived(index, begin, blockStr);
-                    if (pieceManagerPtr->isComplete())
-                    {
-                        std::cerr << "Download completed!" << std::endl;
-                        exit(EXIT_SUCCESS);  // FIXME:: ?
-                    }
+                    // if (pieceManagerPtr->isComplete())
+                    // {
+                    //     std::cerr << "Download completed!" << std::endl;
+                    //     exit(EXIT_SUCCESS);  // FIXME:: ?
+                    // }
                     requestPending = false;
+                    break;
                 }
 
                 case eMessageType::Have:
@@ -88,7 +90,7 @@ void PeerConnection::start()
     }
     catch (const std::runtime_error& e)
     {
-        std::cerr << e.what() << std::endl;
+        // std::cerr << e.what() << std::endl;
         return;
     }
 }
@@ -136,8 +138,9 @@ void PeerConnection::sendInterest()
 void PeerConnection::requestPiece()
 {
     std::string request = Message(eMessageType::Request, pieceManagerPtr->requestPiece(peerPeerId)).getMessageStr();
-    std::cerr << getIntFromStr(request.substr(5, 4)) << std::endl;
-    std::cerr << getIntFromStr(request.substr(9, 4)) << std::endl;
+    // std::cerr << "-------------" << std::endl;
+    // std::cerr << getIntFromStr(request.substr(5, 4)) << std::endl;
+    // std::cerr << getIntFromStr(request.substr(9, 4)) << std::endl;
     sendData(sockfd, request);
     requestPending = true;
 }

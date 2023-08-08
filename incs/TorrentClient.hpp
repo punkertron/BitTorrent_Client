@@ -1,6 +1,8 @@
 #ifndef TORRENT_CLIENT_HPP
 #define TORRENT_CLIENT_HPP
 
+#include <thread>
+
 #include "TorrentFileParser.hpp"
 #include "bencode.hpp"
 
@@ -12,6 +14,8 @@ class TorrentClient
     long long complete;
     long long incomplete;
     bencode::dict peers;
+
+    std::vector<std::thread> threads;
 
    public:
     explicit TorrentClient(const char* filePath);
