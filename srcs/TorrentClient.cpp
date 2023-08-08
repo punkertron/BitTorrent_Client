@@ -36,22 +36,18 @@ void TorrentClient::run()
     PieceManager pieceManager(tfp);
     for (int i = 0; i < p.getPeers().size(); ++i)
     {
-        // if (i == 18 || i == 9)
-        {
-            std::thread thread(&PeerConnection::start,
-                               PeerConnection(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i], i, &pieceManager));
-            threads.push_back(std::move(thread));
-        }
+        std::thread thread(&PeerConnection::start,
+                           PeerConnection(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i], i, &pieceManager));
+        threads.push_back(std::move(thread));
 
+        // Without threads
         // PeerConnection pconn(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i], i, &pieceManager);
         // pconn.start();
     }
 
+    std::thread thread(&PieceManager::trackProgress, std::ref(pieceManager));
+    threads.push_back(std::move(thread));
+
     for (int i = 0; i < threads.size(); ++i)
         threads[i].join();
-
-    if (pieceManager.isComplete())
-        std::cerr << "Downloaded completed!" << std::endl;
-    else
-        std::cerr << "Download error!" << std::endl;
 }

@@ -32,7 +32,6 @@ std::vector<std::unique_ptr<Piece::Block> > Piece::setBlocks(int blockCount, lon
 
 bool Piece::isFull() const
 {
-    // std::cerr << "size = " << blocks.size() << std::endl;
     return std::all_of(blocks.begin(), blocks.end(),
                        [](const std::unique_ptr<Block>& block)
                        {
@@ -47,12 +46,10 @@ const std::string Piece::requestBlock()
         if (blocks[i].get()->status == BlockStatus::missing)
         {
             blocks[i].get()->status = BlockStatus::pending;
-            // std::cerr << "blocks[" << i << "] has status = " << (int)blocks[i].get()->status  << std::endl;
             return intToBytes(htonl(blocks[i].get()->offset)) + intToBytes(htonl(blocks[i].get()->length));
         }
     }
     throw std::runtime_error("No block to request");
-    return ("");
 }
 
 void Piece::fillData(int begin, const std::string& data)

@@ -79,6 +79,11 @@ void PeerConnection::start()
                 default:
                     break;
             }
+
+            // This condition is for test without threads
+            // if (pieceManagerPtr->isComplete())
+            //     std::abort();
+
             if (!choke)
             {
                 if (!requestPending)

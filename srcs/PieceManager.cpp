@@ -3,10 +3,17 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <cmath>
+#include <iomanip>
+#include <thread>
 
 #ifndef DOWNLOADS_PATH
 #define DOWNLOADS_PATH "./downloads/"
+#endif
+
+#ifndef AMOUNT_HASH_SYMBOLS
+#define AMOUNT_HASH_SYMBOLS 50
 #endif
 
 PieceManager::PieceManager(const TorrentFileParser& tfp) : tfp(tfp), Pieces(initialisePieces())
@@ -14,6 +21,7 @@ PieceManager::PieceManager(const TorrentFileParser& tfp) : tfp(tfp), Pieces(init
     downloadedFile.open(DOWNLOADS_PATH + tfp.getFileName(), std::ios::binary | std::ios::out);
     downloadedFile.seekp(tfp.getLengthOne() - 1);
     downloadedFile.write("", 1);
+    // trackProgress();
 }
 
 PieceManager::~PieceManager()
@@ -47,18 +55,13 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
     {
         if (i == totalPieces - 1)
         {
-            // std::cerr << "totalLength % pieceLength = " << totalLength % pieceLength << std::endl;
             if ((totalLength % pieceLength) != 0)
                 blockCount = std::ceil(static_cast<double>((totalLength % pieceLength)) / BLOCK_SIZE);
-            // std::cerr << "BlockCount = " << blockCount << std::endl;
             res.push_back(std::move(std::make_unique<Piece>(blockCount, totalLength, pieceHashes[i], true)));
         }
         else
             res.push_back(std::move(std::make_unique<Piece>(blockCount, totalLength, pieceHashes[i], false)));
     }
-
-    // std::cerr << "RES SIZE = " << res.size() << std::endl;
-    // std::cerr << "TOTAL_PIECES = " << totalPieces << std::endl;
     return res;
 }
 
@@ -76,10 +79,6 @@ void PieceManager::addPeerBitfield(const std::string& peerPeerId, const std::str
             bits[bitPos] = (byte >> (7 - j)) & 1;
         }
     }
-
-    // for (auto bit : bits)
-    //     std::cerr << bit << ' ';
-    // std::cerr << std::endl;
     peerBitfield.insert({peerPeerId, bits});
 }
 
@@ -98,20 +97,16 @@ const std::string PieceManager::requestPiece(const std::string& peerPeerId)
         if (Pieces[i] != nullptr && bitfield[i] && Pieces[i]->haveMissingBlock())
         {
             std::string blockInfo(Pieces[i].get()->requestBlock());
-            // std::cerr << "Piece index = " << i << " and block offset = " << getIntFromStr(blockInfo.substr(0, 4)) <<
-            // std::endl;
             return intToBytes(htonl(i)) + blockInfo;
         }
     }
     throw std::runtime_error("No piece from this peer");
-    return ("");
 }
 
 void PieceManager::blockReceived(int index, int begin, const std::string& blockStr)
 {
     std::lock_guard<std::mutex> lock(mutex);
     Piece* ptr = Pieces[index].get();
-    // std::cerr << "Index = " << index << " begin = " << begin << std::endl;
     ptr->fillData(begin, blockStr);
     std::string dataToFile;
     if (ptr->isFull())
@@ -137,6 +132,41 @@ void PieceManager::writeDataToFile(int index, const std::string& dataToFile)
 
 void PieceManager::addToBitfield(const std::string& peerPeerId, const std::string& payload)
 {
+    std::lock_guard<std::mutex> lock(mutex);
     int bitPos                       = getIntFromStr(payload);
     peerBitfield[peerPeerId][bitPos] = true;
+}
+
+static void display(int n, long long fileSize, int lengthOfSize)
+{
+    std::cout << " [" << std::setw(3) << n << "%]" << '[' << std::setw(lengthOfSize) << std::fixed << std::setprecision(1)
+              << fileSize / 100.0 * n / 1'048'576 << "Mb]" << '[';
+    int i = 0;
+    for (; i < n * AMOUNT_HASH_SYMBOLS / 100.0; ++i)
+        std::cout << '#';
+    for (; i < AMOUNT_HASH_SYMBOLS; ++i)
+        std::cout << ' ';
+    std::cout << ']' << '\r' << std::flush;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+}
+
+void PieceManager::trackProgress()
+{
+    std::string fileName(tfp.getFileName());
+    long long fileSize = tfp.getLengthOne();
+    int lengthOfSize   = fileSize / 1'048'576 + 1;
+    std::string firstLastLine(AMOUNT_HASH_SYMBOLS + 13 + lengthOfSize, '-');
+    std::cout << firstLastLine << "\nDownload: " << tfp.getFileName() << std::endl;
+    while (!isComplete())
+    {
+        mutex.lock();
+        int downloadPercent = 100 * totalDownloaded / totalPieces;
+        mutex.unlock();
+        display(downloadPercent, fileSize, lengthOfSize);
+    }
+    std::cout << " [100%]"
+              << "[" << std::fixed << std::setprecision(1) << fileSize * 1.0 / 1'048'576 << "Mb]" << '[';
+    for (int i = 0; i < AMOUNT_HASH_SYMBOLS; ++i)
+        std::cout << '#';
+    std::cout << ']' << "\nDownload complete!\n" << firstLastLine << std::endl;
 }

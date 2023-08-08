@@ -22,9 +22,6 @@ class PieceManager
     std::vector<std::unique_ptr<Piece> > Pieces;
     std::ofstream downloadedFile;
 
-    // std::mutex mutexWriteBitfield;
-    // std::mutex mutexRequest;
-    // std::mutex mutexWriteToFile;
     std::mutex mutex;
 
     std::vector<std::unique_ptr<Piece> > initialisePieces();
@@ -41,6 +38,7 @@ class PieceManager
     void addToBitfield(const std::string& peerPeerId, const std::string& payload);
 
     bool isComplete();
+    void trackProgress();
 };
 
 #endif  // PIECE_MANAGER_HPP
