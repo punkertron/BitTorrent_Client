@@ -11,6 +11,7 @@ SRCS_FILES		= main.cpp \
 					PieceManager.cpp \
 					Piece.cpp \
 					Message.cpp \
+					PeersQueue.cpp \
 					utils.cpp \
 					connection.cpp
 
@@ -18,8 +19,9 @@ OBJS_PATH	= ./objs
 OBJS_FILES	= ${SRCS_FILES:.cpp=.o}
 OBJS		= ${addprefix ${OBJS_PATH}/, ${OBJS_FILES}}
 
+#/usr/local/include
 INC_DIR		= ./incs
-INC			= ${INC_DIR} /usr/local/include ./bencode
+INC			= ${INC_DIR} ./bencode
 INCLUDE		= $(INC:%=-I %)
 
 LDLIBS		= -lcryptopp -lcurl
@@ -27,7 +29,7 @@ LDLIBS		= -lcryptopp -lcurl
 DEPS		= ${OBJS:%.o=%.d}
 
 CXX			= g++
-CXXFLAGS	= -std=c++17 -g3 -fsanitize=thread  #-march=native #-g -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined
+CXXFLAGS	= -std=c++17 -g3 -O0 -fsanitize=thread  #-march=native # -g -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined
 
 RM			= rm -rf
 

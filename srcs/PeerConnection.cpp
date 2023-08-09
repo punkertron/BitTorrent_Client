@@ -45,7 +45,12 @@ void PeerConnection::start()
 {
     while (!pieceManagerPtr->isComplete())
     {
-        peer = peers->getPeer();
+        while ((peer = peers->getPeer()).first == "")
+        {
+            if (pieceManagerPtr->isComplete())
+                return;
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+        }
 
         try
         {
@@ -90,8 +95,9 @@ void PeerConnection::start()
         catch (const std::runtime_error& e)
         {
             // std::cerr << e.what() << std::endl;
-            if (sockfd != -1)
+            if (sockfd > 0)
                 close(sockfd);
+            sockfd = -1;
         }
     }
 }

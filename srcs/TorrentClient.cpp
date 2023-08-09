@@ -39,7 +39,7 @@ void TorrentClient::run()
     PieceManager pieceManager(tfp);
     PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0);
     std::vector<std::pair<std::string, long long> > peers(p.getPeers());
-    for (auto& peer : peers)
+    for (auto peer : peers)
         peersQueue.push_back(peer);
 
     // This thread displays download status
@@ -51,10 +51,10 @@ void TorrentClient::run()
     {
         std::thread thread(&PeerConnection::start,
                            PeerConnection(tfp.getInfoHash(), std::string(PEER_ID), &pieceManager, &peersQueue));
-        thread.detach();
         threads.push_back(std::move(thread));
     }
 
+    // in while loop we can update peers
     auto lastUpdate = std::chrono::steady_clock::now();
     while (true)
     {
@@ -70,8 +70,12 @@ void TorrentClient::run()
             for (auto peer : peers)
                 peersQueue.push_back(peer);
         }
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
     }
 
-    threads[0].join();
+    for (auto& thr : threads)
+    {
+        if (thr.joinable())
+            thr.join();
+    }
 }

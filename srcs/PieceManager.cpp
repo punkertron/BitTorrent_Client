@@ -177,7 +177,7 @@ static int getLength(long long num)
     return i;
 }
 
-void PieceManager::trackProgress()
+void PieceManager::trackProgress()  // FIXME: when add double percentage format of the message broken. Need to fix this
 {
     std::string fileName(tfp.getFileName());
     long long fileSize = tfp.getLengthOne();
