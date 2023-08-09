@@ -65,7 +65,7 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::decodeResponse(co
     {
         auto data = bencode::decode(response);
         auto dict = std::get<bencode::dict>(data);
-        // long long interval   = std::get<bencode::integer>(dict["interval"]);
+        interval  = std::get<bencode::integer>(dict["interval"]);
         // long long complete   = std::get<bencode::integer>(dict["complete"]);
         // long long incomplete = std::get<bencode::integer>(dict["incomplete"]);
 

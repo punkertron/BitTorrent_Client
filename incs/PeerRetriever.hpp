@@ -21,6 +21,7 @@ class PeerRetriever
 
     int port;
     long long fileSize;
+    long long interval;
     std::string peerId;
     std::vector<std::pair<std::string, long long> > allPeers;
 
@@ -28,13 +29,19 @@ class PeerRetriever
 
    public:
     explicit PeerRetriever(const std::string& peerId, int port, const TorrentFileParser& tfp, long long bytesDownloaded);
-    ~PeerRetriever() = default;
+    ~PeerRetriever()                                     = default;
+    PeerRetriever& operator=(const PeerRetriever& other) = default;
 
     std::vector<std::pair<std::string, long long> > retrievePeers(const TorrentFileParser& tfp, long long bytesDownloaded);
 
     const std::vector<std::pair<std::string, long long> >& getPeers() const
     {
         return allPeers;
+    }
+
+    const long long getInterval() const
+    {
+        return interval;
     }
 };
 

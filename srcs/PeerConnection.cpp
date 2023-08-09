@@ -5,16 +5,16 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <thread>
 
 #include "Message.hpp"
 #include "connection.hpp"
 #include "unistd.h"
 #include "utils.hpp"
 
-PeerConnection::PeerConnection(const std::string& infoHash, const std::string& peerId,
-                               const std::pair<std::string, long long>& peer, const int peerIndex,
-                               PieceManager* pieceManagerPtr) :
-    peerIndex(peerIndex), infoHash(infoHash), peerId(peerId), peer(peer), pieceManagerPtr(pieceManagerPtr)
+PeerConnection::PeerConnection(const std::string& infoHash, const std::string& peerId, PieceManager* pieceManagerPtr,
+                               SharedQueue<std::pair<std::string, long long> >* queue) :
+    infoHash(infoHash), peerId(peerId), pieceManagerPtr(pieceManagerPtr), queue(queue)
 {
 }
 
@@ -24,79 +24,83 @@ PeerConnection::~PeerConnection()
         close(sockfd);
 }
 
+void PeerConnection::establishConnection()
+{
+    sockfd = createConnection(peer.first, peer.second);
+    // std::cerr << "socket = " << sockfd << std::endl;
+    performHandshake();
+    Message msg(recieveMessage());
+    if (msg.getMessageType() == eMessageType::Bitfield)
+    {
+        pieceManagerPtr->addPeerBitfield(peerPeerId, msg.getPayload());
+    }
+    else
+    {
+        throw std::runtime_error("No Bitfield");
+    }
+    sendInterest();
+}
+
 void PeerConnection::start()
 {
-    try
+    while (!pieceManagerPtr->isComplete())
     {
-        sockfd = createConnection(peer.first, peer.second, peerIndex);
-        // std::cerr << "socket = " << sockfd << std::endl;
-        performHandshake();
-        // std::cerr << "I am here!" << std::endl;
-        Message msg(recieveMessage());
-        if (msg.getMessageType() == eMessageType::Bitfield)
+        while (!queue->size())
         {
-            pieceManagerPtr->addPeerBitfield(peerPeerId, msg.getPayload());
+            if (pieceManagerPtr->isComplete())
+                return;
+            std::this_thread::sleep_for(std::chrono::seconds(3));
         }
-        else
-        {
-            throw std::runtime_error("No Bitfield");
-        }
-        sendInterest();
+        peer = queue->front();
+        queue->pop_front();
 
-        while (!pieceManagerPtr->isComplete())
+        try
         {
-            msg = recieveMessage();
-            // std::cerr << "Message type = " << (int)msg.getMessageType() << std::endl;
-            switch (msg.getMessageType())
+            establishConnection();
+            while (!pieceManagerPtr->isComplete())
             {
-                case eMessageType::Choke:
-                    choke = true;
-                    break;
-                case eMessageType::Unchoke:
-                    choke = false;
-                    break;
-                case eMessageType::Piece:
+                Message msg = recieveMessage();
+                switch (msg.getMessageType())
                 {
-                    std::string payload = msg.getPayload();
-                    int index           = getIntFromStr(payload.substr(0, 4));
-                    int begin           = getIntFromStr(payload.substr(4, 4));
-                    std::string blockStr(payload.substr(8));
-                    pieceManagerPtr->blockReceived(index, begin, blockStr);
-                    // if (pieceManagerPtr->isComplete())
-                    // {
-                    //     std::cerr << "Download completed!" << std::endl;
-                    //     exit(EXIT_SUCCESS);  // FIXME:: ?
-                    // }
-                    requestPending = false;
-                    break;
+                    case eMessageType::Choke:
+                        choke = true;
+                        break;
+                    case eMessageType::Unchoke:
+                        choke = false;
+                        break;
+                    case eMessageType::Piece:
+                    {
+                        std::string payload = msg.getPayload();
+                        int index           = getIntFromStr(payload.substr(0, 4));
+                        int begin           = getIntFromStr(payload.substr(4, 4));
+                        std::string blockStr(payload.substr(8));
+                        pieceManagerPtr->blockReceived(index, begin, blockStr);
+                        requestPending = false;
+                        break;
+                    }
+                    case eMessageType::Have:
+                        pieceManagerPtr->addToBitfield(peerPeerId, msg.getPayload());
+                        break;
+                    default:
+                        break;
                 }
 
-                case eMessageType::Have:
-                    // std::cerr << "Have!" << std::endl;
-                    pieceManagerPtr->addToBitfield(peerPeerId, msg.getPayload());
-                    break;
-
-                default:
-                    break;
-            }
-
-            // This condition is for test without threads
-            // if (pieceManagerPtr->isComplete())
-            //     std::abort();
-
-            if (!choke)
-            {
-                if (!requestPending)
+                if (!choke)
                 {
-                    requestPiece();
+                    if (!requestPending)
+                    {
+                        requestPiece();
+                    }
                 }
             }
         }
-    }
-    catch (const std::runtime_error& e)
-    {
-        // std::cerr << e.what() << std::endl;
-        return;
+        catch (const std::runtime_error& e)
+        {
+            // std::cerr << e.what() << std::endl;
+            // return;
+            if (sockfd != -1)
+                close(sockfd);
+        }
     }
 }
 

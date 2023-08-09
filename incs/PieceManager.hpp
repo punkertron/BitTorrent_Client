@@ -22,10 +22,14 @@ class PieceManager
     std::vector<std::unique_ptr<Piece> > Pieces;
     std::ofstream downloadedFile;
 
+    std::chrono::time_point<std::chrono::steady_clock> startTime =
+        std::chrono::steady_clock::now();  // start of the downloading
+
     std::mutex mutex;
 
     std::vector<std::unique_ptr<Piece> > initialisePieces();
     void writeDataToFile(int index, const std::string& dataToFile);
+    void display(int n, long long fileSize, int lengthOfSize);
 
    public:
     PieceManager(const TorrentFileParser& tfp);

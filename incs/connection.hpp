@@ -3,7 +3,7 @@
 
 #include <string>
 
-int createConnection(const std::string& ip, const long long port, int peerIndex);
+int createConnection(const std::string& ip, const long long port);
 void sendData(const int sockfd, const std::string& msg);
 const std::string recieveData(int sockfd, int size);
 

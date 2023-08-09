@@ -27,7 +27,7 @@ LDLIBS		= -lcryptopp -lcurl
 DEPS		= ${OBJS:%.o=%.d}
 
 CXX			= g++
-CXXFLAGS	= -std=c++17 -O2 #-fsanitize=thread  #-O2 #-g -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined
+CXXFLAGS	= -std=c++17 -g3 -fsanitize=thread  #-march=native #-g -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined
 
 RM			= rm -rf
 

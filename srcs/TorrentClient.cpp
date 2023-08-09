@@ -14,6 +14,10 @@
 #define PEER_ID "-TR1000-000123456789"  // should use random
 #endif
 
+#ifndef THREAD_NUM
+#define THREAD_NUM 10
+#endif
+
 TorrentClient::TorrentClient(const char* filePath) : tfp(filePath)
 {
     if (!tfp.IsSingle())
@@ -29,25 +33,46 @@ TorrentClient::~TorrentClient()
     curl_global_cleanup();
 }
 
+// std::cerr << "There are " << p.getPeers().size() << " peers!" << std::endl;
+
 void TorrentClient::run()
 {
-    PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0);
-    // std::cerr << "There are " << p.getPeers().size() << " peers!" << std::endl;
     PieceManager pieceManager(tfp);
-    for (int i = 0; i < p.getPeers().size(); ++i)
-    {
-        std::thread thread(&PeerConnection::start,
-                           PeerConnection(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i], i, &pieceManager));
-        threads.push_back(std::move(thread));
+    PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0);
+    std::vector<std::pair<std::string, long long> > peers(p.getPeers());
+    for (auto& peer : peers)
+        queue.push_back(peer);
 
-        // Without threads
-        // PeerConnection pconn(tfp.getInfoHash(), std::string(PEER_ID), p.getPeers()[i], i, &pieceManager);
-        // pconn.start();
-    }
-
+    // This thread displays download status
     std::thread thread(&PieceManager::trackProgress, std::ref(pieceManager));
     threads.push_back(std::move(thread));
 
-    for (int i = 0; i < threads.size(); ++i)
-        threads[i].join();
+    // These threads download file
+    for (int i = 0; i < THREAD_NUM && i < peers.size(); ++i)
+    {
+        std::thread thread(&PeerConnection::start,
+                           PeerConnection(tfp.getInfoHash(), std::string(PEER_ID), &pieceManager, &queue));
+        thread.detach();
+        threads.push_back(std::move(thread));
+    }
+
+    auto lastUpdate = std::chrono::steady_clock::now();
+    while (true)
+    {
+        if (pieceManager.isComplete())
+            break;
+        auto diff = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - lastUpdate).count();
+
+        if ((diff / 1000) > p.getInterval() || !queue.size())
+        {
+            lastUpdate = std::chrono::steady_clock::now();
+            p          = PeerRetriever(std::string(PEER_ID), PORT, tfp, 0);
+            peers      = p.getPeers();
+            for (auto peer : peers)
+                queue.push_back(peer);
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(6));
+    }
+
+    threads[0].join();
 }

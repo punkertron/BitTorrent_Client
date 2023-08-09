@@ -19,9 +19,8 @@
 PieceManager::PieceManager(const TorrentFileParser& tfp) : tfp(tfp), Pieces(initialisePieces())
 {
     downloadedFile.open(DOWNLOADS_PATH + tfp.getFileName(), std::ios::binary | std::ios::out);
-    downloadedFile.seekp(tfp.getLengthOne() - 1);
-    downloadedFile.write("", 1);
-    // trackProgress();
+    // downloadedFile.seekp(tfp.getLengthOne() - 1);
+    // downloadedFile.write("", 1);
 }
 
 PieceManager::~PieceManager()
@@ -57,6 +56,7 @@ std::vector<std::unique_ptr<Piece> > PieceManager::initialisePieces()
         {
             if ((totalLength % pieceLength) != 0)
                 blockCount = std::ceil(static_cast<double>((totalLength % pieceLength)) / BLOCK_SIZE);
+            // std::cerr << "blockCount = " << blockCount << std::endl;
             res.push_back(std::move(std::make_unique<Piece>(blockCount, totalLength, pieceHashes[i], true)));
         }
         else
@@ -85,6 +85,7 @@ void PieceManager::addPeerBitfield(const std::string& peerPeerId, const std::str
 bool PieceManager::isComplete()
 {
     std::lock_guard<std::mutex> lock(mutex);
+    // std::cerr << "totalDownloaded = " << totalDownloaded << " and totalPieces = " << totalPieces << std::endl;
     return totalDownloaded == totalPieces;
 }
 
@@ -107,19 +108,23 @@ void PieceManager::blockReceived(int index, int begin, const std::string& blockS
 {
     std::lock_guard<std::mutex> lock(mutex);
     Piece* ptr = Pieces[index].get();
-    ptr->fillData(begin, blockStr);
-    std::string dataToFile;
-    if (ptr->isFull())
+    if (ptr)
     {
-        if (ptr->isHashChecked(dataToFile))
+        ptr->fillData(begin, blockStr);
+        std::string dataToFile;
+        if (ptr->isFull())
         {
-            writeDataToFile(index, dataToFile);
-            Pieces[index] = nullptr;
-            ++totalDownloaded;
-        }
-        else
-        {
-            ;  // TODO: if hash is not correct
+            if (ptr->isHashChecked(dataToFile))
+            {
+                writeDataToFile(index, dataToFile);
+                Pieces[index] = nullptr;
+                ++totalDownloaded;
+            }
+            else
+            {
+                ptr->resetAllBlocksToMissing();
+                // throw std::runtime_error("Hashes doesn't match");
+            }
         }
     }
 }
@@ -137,7 +142,7 @@ void PieceManager::addToBitfield(const std::string& peerPeerId, const std::strin
     peerBitfield[peerPeerId][bitPos] = true;
 }
 
-static void display(int n, long long fileSize, int lengthOfSize)
+void PieceManager::display(int n, long long fileSize, int lengthOfSize)
 {
     std::cout << " [" << std::setw(3) << n << "%]" << '[' << std::setw(lengthOfSize) << std::fixed << std::setprecision(1)
               << fileSize / 100.0 * n / 1'048'576 << "Mb]" << '[';
@@ -146,16 +151,38 @@ static void display(int n, long long fileSize, int lengthOfSize)
         std::cout << '#';
     for (; i < AMOUNT_HASH_SYMBOLS; ++i)
         std::cout << ' ';
-    std::cout << ']' << '\r' << std::flush;
+    std::cout << ']';
+
+    auto elapsedTime = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - startTime).count();
+
+    int milliseconds = static_cast<int>(elapsedTime);
+    int seconds      = milliseconds / 1000;
+    int minutes      = seconds / 60;
+    int hours        = minutes / 60;
+    char prevFill    = std::cout.fill();
+    std::cout << "[" << std::setfill('0') << std::setw(2) << hours % 24 << ":" << std::setfill('0') << std::setw(2)
+              << minutes % 60 << ":" << std::setfill('0') << std::setw(2) << seconds % 60 << "]" << '\r' << std::flush;
+    std::cout.fill(prevFill);
     std::this_thread::sleep_for(std::chrono::seconds(1));
+}
+
+static int getLength(long long num)
+{
+    int i = 1;
+    while (num / 10)
+    {
+        ++i;
+        num /= 10;
+    }
+    return i;
 }
 
 void PieceManager::trackProgress()
 {
     std::string fileName(tfp.getFileName());
     long long fileSize = tfp.getLengthOne();
-    int lengthOfSize   = fileSize / 1'048'576 + 1;
-    std::string firstLastLine(AMOUNT_HASH_SYMBOLS + 13 + lengthOfSize, '-');
+    int lengthOfSize   = getLength(fileSize / 1'048'576) + 2;
+    std::string firstLastLine(AMOUNT_HASH_SYMBOLS + 23 + lengthOfSize, '-');
     std::cout << firstLastLine << "\nDownload: " << tfp.getFileName() << std::endl;
     while (!isComplete())
     {

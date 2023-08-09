@@ -22,6 +22,9 @@ std::vector<std::unique_ptr<Piece::Block> > Piece::setBlocks(int blockCount, lon
         if (isLastPiece && offset == blockCount - 1)
         {
             block->length = totalLength % BLOCK_SIZE;
+            if (!block->length)
+                block->length = BLOCK_SIZE;
+            // std::cerr << "offset = " << offset << " blockLength = " << block->length << std::endl;
         }
         else
             block->length = BLOCK_SIZE;
@@ -39,14 +42,24 @@ bool Piece::isFull() const
                        });
 }
 
+bool Piece::isReadyToRequest(const Block* ptr)
+{
+    return (
+        ptr->status == BlockStatus::missing ||
+        (ptr->status != BlockStatus::retrieved &&
+         std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - ptr->timeRequest).count() > 10000));
+}
+
 const std::string Piece::requestBlock()
 {
     for (int i = 0; i < blocks.size(); ++i)
     {
-        if (blocks[i].get()->status == BlockStatus::missing)
+        if (isReadyToRequest(blocks[i].get()))
         {
-            blocks[i].get()->status = BlockStatus::pending;
-            return intToBytes(htonl(blocks[i].get()->offset)) + intToBytes(htonl(blocks[i].get()->length));
+            Block* ptr       = blocks[i].get();
+            ptr->status      = BlockStatus::pending;
+            ptr->timeRequest = std::chrono::steady_clock::now();
+            return intToBytes(htonl(ptr->offset)) + intToBytes(htonl(ptr->length));
         }
     }
     throw std::runtime_error("No block to request");
@@ -79,12 +92,20 @@ bool Piece::isHashChecked(std::string& dataToFile)
     return true;
 }
 
-bool Piece::haveMissingBlock() const
+bool Piece::haveMissingBlock()
 {
     for (int i = 0; i < blocks.size(); ++i)
     {
-        if (blocks[i].get()->status == BlockStatus::missing)
+        if (isReadyToRequest(blocks[i].get()))
             return true;
     }
     return false;
+}
+
+void Piece::resetAllBlocksToMissing()
+{
+    for (int i = 0; i < blocks.size(); ++i)
+    {
+        blocks[i].get()->status = BlockStatus::missing;
+    }
 }

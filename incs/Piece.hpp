@@ -2,6 +2,7 @@
 #define PIECE_HPP
 
 #include <algorithm>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
@@ -28,12 +29,14 @@ class Piece
         int length;
         BlockStatus status;
         std::string data;
+        std::chrono::time_point<std::chrono::steady_clock> timeRequest;
     };
 
     std::vector<std::unique_ptr<Block> > blocks;
     const std::string hash;
 
     std::vector<std::unique_ptr<Block> > setBlocks(int blockCount, long long totalLength, bool isLastPiece);
+    inline bool isReadyToRequest(const Block* ptr);
 
    public:
     Piece(int blockCount, long long totalLength, const std::string& hash, bool isLastPiece);
@@ -43,7 +46,8 @@ class Piece
     bool isHashChecked(std::string& dataToFile);
     const std::string requestBlock();
     void fillData(int begin, const std::string& data);
-    bool haveMissingBlock() const;
+    bool haveMissingBlock();
+    void resetAllBlocksToMissing();
 };
 
 #endif  // PIECE_HPP

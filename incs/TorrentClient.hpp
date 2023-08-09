@@ -3,6 +3,7 @@
 
 #include <thread>
 
+#include "SharedQueue.hpp"
 #include "TorrentFileParser.hpp"
 #include "bencode.hpp"
 
@@ -14,6 +15,8 @@ class TorrentClient
     long long complete;
     long long incomplete;
     bencode::dict peers;
+
+    SharedQueue<std::pair<std::string, long long> > queue;
 
     std::vector<std::thread> threads;
 

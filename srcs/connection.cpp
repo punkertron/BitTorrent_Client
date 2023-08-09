@@ -3,9 +3,11 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <cerrno>
 #include <chrono>
 #include <cstring>
 #include <memory>
@@ -13,7 +15,7 @@
 
 #include "utils.hpp"
 
-int createConnection(const std::string& ip, const long long port, int peerIndex)
+int createConnection(const std::string& ip, const long long port)
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1)
@@ -30,41 +32,68 @@ int createConnection(const std::string& ip, const long long port, int peerIndex)
         throw std::runtime_error("inet_pton error");
     }
 
-    // FIXME: something bad with sockets ?
-
+    // Set socket to non-blocking mode
     int flags = fcntl(sockfd, F_GETFL, 0);
     if (flags == -1)
     {
-        throw std::runtime_error("error in flags");
+        throw std::runtime_error("Error in fcntl flags");
     }
-
-    flags &= ~O_NONBLOCK;  // Clear O_NONBLOCK flag
+    flags |= O_NONBLOCK;
     if (fcntl(sockfd, F_SETFL, flags) == -1)
     {
-        throw std::runtime_error("error in FCNTL");
-    }
-
-    struct timeval timeout;
-    timeout.tv_sec  = 5;
-    timeout.tv_usec = 0;
-
-    if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) == -1)
-    {
-        throw std::runtime_error("error with setsockopt");
+        throw std::runtime_error("Error in fcntl");
     }
 
     int connectResult = connect(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
     if (connectResult == -1)
     {
-        throw std::runtime_error("Error connecting to the peer " + std::to_string(peerIndex + 1));
+        if (errno == EINPROGRESS)
+        {
+            fd_set writeSet;
+            FD_ZERO(&writeSet);
+            FD_SET(sockfd, &writeSet);
+
+            struct timeval timeout;
+            timeout.tv_sec  = 5;
+            timeout.tv_usec = 0;
+
+            int selectResult = select(sockfd + 1, NULL, &writeSet, NULL, &timeout);
+            if (selectResult == -1)
+            {
+                throw std::runtime_error("Error in select");
+            }
+            else if (selectResult == 0)
+            {
+                throw std::runtime_error("Connection timeout");
+            }
+        }
+        else
+        {
+            throw std::runtime_error("Error connecting to peer");
+        }
     }
-    // std::cerr << "Successful connection with the peer " + std::to_string(peerIndex + 1) << std::endl;
+
+    // Connection successful, socket is in blocking mode again
+    flags &= ~O_NONBLOCK;
+    if (fcntl(sockfd, F_SETFL, flags) == -1)
+    {
+        throw std::runtime_error("Error in fcntl");
+    }
 
     return sockfd;
 }
 
 void sendData(const int sockfd, const std::string& msg)
 {
+    struct timeval timeout;
+    timeout.tv_sec  = 5;
+    timeout.tv_usec = 0;
+
+    if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) == -1)
+    {
+        throw std::runtime_error("error with setsockopt sendTimeout");
+    }
+
     int sent = send(sockfd, msg.c_str(), msg.size(), 0);
     if (sent == 1)
     {
@@ -93,27 +122,20 @@ static void recvData(int sockfd, char* buffer, int size)
 
 const std::string recieveData(int sockfd, int size)
 {
-    // struct timeval tv;
-    // tv.tv_sec = 3;
-    // tv.tv_usec = 0;
-    // setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+    struct timeval recvTimeout;
+    recvTimeout.tv_sec  = 3;  // 3 seconds
+    recvTimeout.tv_usec = 0;
+
+    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &recvTimeout, sizeof(recvTimeout)) == -1)
+    {
+        throw std::runtime_error("error with setsockopt recvTimeout");
+    }
 
     if (!size)
     {
         char buffer[4];
 
         recvData(sockfd, buffer, 4);
-
-        // int bytesReceived = 0;
-        // int sumReceived   = 0;
-        // while (sumReceived < 4)  // Or <
-        // {
-        //     bytesReceived = recv(sockfd, buffer + sumReceived, 4 - sumReceived, 0);
-        //     if (bytesReceived == -1)
-        //         throw std::runtime_error("Error receiving data");
-        //     sumReceived += bytesReceived;
-        // }
-
         std::string res(4, '\0');
         for (int i = 0; i < 4; ++i)
             res[i] = buffer[i];
@@ -133,16 +155,6 @@ const std::string recieveData(int sockfd, int size)
 
         recvData(sockfd, bigBuffer.get(), size);
 
-        // int sumReceived = 0;
-        // int bytesReceived = 0;
-        // while (sumReceived < size)  // Or <
-        // {
-        //     bytesReceived = recv(sockfd, bigBuffer.get() + sumReceived, size - sumReceived, 0);
-        //     if (bytesReceived == -1)
-        //         throw std::runtime_error("Error receiving data");
-        //     sumReceived += bytesReceived;
-        // }
-
         size += 4;
         std::string bigRes;
         int i = 0;
@@ -152,19 +164,9 @@ const std::string recieveData(int sockfd, int size)
             bigRes.push_back(bigBuffer[i - 4]);
         return bigRes;
     }
-    else  // Handshake
+    else  // Handshake  - size = 68
     {
-        char buffer[size];  // size = 68
-
-        // int bytesReceived = 0;
-        // int sumReceived   = 0;
-        // while (sumReceived < size)  // Or <
-        // {
-        //     bytesReceived = recv(sockfd, buffer + sumReceived, size - sumReceived, 0);
-        //     if (bytesReceived == -1)
-        //         throw std::runtime_error("Error receiving data");
-        //     sumReceived += bytesReceived;
-        // }
+        char buffer[size];
 
         recvData(sockfd, buffer, size);
 
