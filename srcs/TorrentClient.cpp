@@ -4,6 +4,7 @@
 
 #include "PeerConnection.hpp"
 #include "PeerRetriever.hpp"
+#include "PeersQueue.hpp"
 #include "PieceManager.hpp"
 
 #ifndef PORT
@@ -15,7 +16,7 @@
 #endif
 
 #ifndef THREAD_NUM
-#define THREAD_NUM 10
+#define THREAD_NUM 15
 #endif
 
 TorrentClient::TorrentClient(const char* filePath) : tfp(filePath)
@@ -33,15 +34,13 @@ TorrentClient::~TorrentClient()
     curl_global_cleanup();
 }
 
-// std::cerr << "There are " << p.getPeers().size() << " peers!" << std::endl;
-
 void TorrentClient::run()
 {
     PieceManager pieceManager(tfp);
     PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0);
     std::vector<std::pair<std::string, long long> > peers(p.getPeers());
     for (auto& peer : peers)
-        queue.push_back(peer);
+        peersQueue.push_back(peer);
 
     // This thread displays download status
     std::thread thread(&PieceManager::trackProgress, std::ref(pieceManager));
@@ -51,7 +50,7 @@ void TorrentClient::run()
     for (int i = 0; i < THREAD_NUM && i < peers.size(); ++i)
     {
         std::thread thread(&PeerConnection::start,
-                           PeerConnection(tfp.getInfoHash(), std::string(PEER_ID), &pieceManager, &queue));
+                           PeerConnection(tfp.getInfoHash(), std::string(PEER_ID), &pieceManager, &peersQueue));
         thread.detach();
         threads.push_back(std::move(thread));
     }
@@ -63,15 +62,15 @@ void TorrentClient::run()
             break;
         auto diff = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - lastUpdate).count();
 
-        if ((diff / 1000) > p.getInterval() || !queue.size())
+        if ((diff / 1000) > p.getInterval() || !peersQueue.hasFreePeers())
         {
             lastUpdate = std::chrono::steady_clock::now();
             p          = PeerRetriever(std::string(PEER_ID), PORT, tfp, 0);
             peers      = p.getPeers();
             for (auto peer : peers)
-                queue.push_back(peer);
+                peersQueue.push_back(peer);
         }
-        std::this_thread::sleep_for(std::chrono::seconds(6));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 
     threads[0].join();

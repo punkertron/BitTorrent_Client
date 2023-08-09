@@ -13,8 +13,8 @@
 #include "utils.hpp"
 
 PeerConnection::PeerConnection(const std::string& infoHash, const std::string& peerId, PieceManager* pieceManagerPtr,
-                               SharedQueue<std::pair<std::string, long long> >* queue) :
-    infoHash(infoHash), peerId(peerId), pieceManagerPtr(pieceManagerPtr), queue(queue)
+                               PeersQueue* peers) :
+    infoHash(infoHash), peerId(peerId), pieceManagerPtr(pieceManagerPtr), peers(peers)
 {
 }
 
@@ -45,14 +45,7 @@ void PeerConnection::start()
 {
     while (!pieceManagerPtr->isComplete())
     {
-        while (!queue->size())
-        {
-            if (pieceManagerPtr->isComplete())
-                return;
-            std::this_thread::sleep_for(std::chrono::seconds(3));
-        }
-        peer = queue->front();
-        queue->pop_front();
+        peer = peers->getPeer();
 
         try
         {
@@ -97,7 +90,6 @@ void PeerConnection::start()
         catch (const std::runtime_error& e)
         {
             // std::cerr << e.what() << std::endl;
-            // return;
             if (sockfd != -1)
                 close(sockfd);
         }

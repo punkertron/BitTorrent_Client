@@ -29,7 +29,7 @@ class PieceManager
 
     std::vector<std::unique_ptr<Piece> > initialisePieces();
     void writeDataToFile(int index, const std::string& dataToFile);
-    void display(int n, long long fileSize, int lengthOfSize);
+    void display(double n, long long fileSize, int lengthOfSize);
 
    public:
     PieceManager(const TorrentFileParser& tfp);

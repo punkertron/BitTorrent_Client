@@ -4,8 +4,8 @@
 #include <string>
 
 #include "Message.hpp"
+#include "PeersQueue.hpp"
 #include "PieceManager.hpp"
-#include "SharedQueue.hpp"
 
 class PeerConnection
 {
@@ -20,7 +20,7 @@ class PeerConnection
     std::string bitfield;
     PieceManager* pieceManagerPtr;
 
-    SharedQueue<std::pair<std::string, long long> >* queue;
+    PeersQueue* peers;
 
     inline std::string createHandshakeMessage() const;
     void performHandshake();
@@ -30,8 +30,7 @@ class PeerConnection
     void establishConnection();
 
    public:
-    PeerConnection(const std::string& infoHash, const std::string& peerId, PieceManager* pieceManagerPtr,
-                   SharedQueue<std::pair<std::string, long long> >* queue);
+    PeerConnection(const std::string& infoHash, const std::string& peerId, PieceManager* pieceManagerPtr, PeersQueue* peers);
     ~PeerConnection();
     void start();
 };

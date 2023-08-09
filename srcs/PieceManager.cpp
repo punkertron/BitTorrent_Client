@@ -13,7 +13,7 @@
 #endif
 
 #ifndef AMOUNT_HASH_SYMBOLS
-#define AMOUNT_HASH_SYMBOLS 50
+#define AMOUNT_HASH_SYMBOLS 48
 #endif
 
 PieceManager::PieceManager(const TorrentFileParser& tfp) : tfp(tfp), Pieces(initialisePieces())
@@ -142,10 +142,10 @@ void PieceManager::addToBitfield(const std::string& peerPeerId, const std::strin
     peerBitfield[peerPeerId][bitPos] = true;
 }
 
-void PieceManager::display(int n, long long fileSize, int lengthOfSize)
+void PieceManager::display(double n, long long fileSize, int lengthOfSize)
 {
-    std::cout << " [" << std::setw(3) << n << "%]" << '[' << std::setw(lengthOfSize) << std::fixed << std::setprecision(1)
-              << fileSize / 100.0 * n / 1'048'576 << "Mb]" << '[';
+    std::cout << " [" << std::setw(5) << std::fixed << std::setprecision(1) << n << "%]" << '[' << std::setw(lengthOfSize)
+              << std::fixed << std::setprecision(1) << fileSize / 100.0 * n / 1'048'576 << "Mb]" << '[';
     int i = 0;
     for (; i < n * AMOUNT_HASH_SYMBOLS / 100.0; ++i)
         std::cout << '#';
@@ -187,7 +187,7 @@ void PieceManager::trackProgress()
     while (!isComplete())
     {
         mutex.lock();
-        int downloadPercent = 100 * totalDownloaded / totalPieces;
+        double downloadPercent = 100.0 * totalDownloaded / totalPieces;
         mutex.unlock();
         display(downloadPercent, fileSize, lengthOfSize);
     }
