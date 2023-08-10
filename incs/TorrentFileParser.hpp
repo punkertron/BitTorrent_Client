@@ -24,64 +24,22 @@ class TorrentFileParser
     std::string announce;
     long long pieceLength;
     std::string pieces;
-
     bool isSingle = false;
-
     std::string infoHash;
 
-    std::variant<singleFile, multiFile> SingleMultiFile;
-    // info from SINGLE file mode:
-
-    // info from MULTIPLE file mode
-
-    // friend class PeerRetriever;
+    std::variant<singleFile, multiFile> SingleMultiFile;  // TODO: add correct parsing of multiFile
 
    public:
     TorrentFileParser(const char* filePath);
-    const std::string& getAnnounce() const
-    {
-        return announce;
-    }
-
-    const long long& getPieceLength() const
-    {
-        return pieceLength;
-    }
-
-    const std::string& getPieces() const
-    {
-        return pieces;
-    }
-
-    const bool IsSingle() const
-    {
-        return isSingle;
-    }
-
-    const std::string& getFileName() const
-    {
-        return std::get<singleFile>(SingleMultiFile).fileName;
-    }
-
-    const long long getLengthOne() const
-    {
-        return std::get<singleFile>(SingleMultiFile).length;
-    }
-
-    const std::string& getDirName() const
-    {
-        return std::get<multiFile>(SingleMultiFile).dirName;
-    }
-
-    const bencode::list& getFiles() const
-    {
-        return std::get<multiFile>(SingleMultiFile).files;
-    }
-
-    const std::string& getInfoHash() const
-    {
-        return infoHash;
-    }
+    const std::string& getAnnounce() const;
+    const long long& getPieceLength() const;
+    const std::string& getPieces() const;
+    bool IsSingle() const;
+    const std::string& getFileName() const;
+    long long getLengthOne() const;
+    const std::string& getDirName() const;
+    const bencode::list& getFiles() const;
+    const std::string& getInfoHash() const;
 };
 
 #endif  // TORRENT_FILE_PARSER

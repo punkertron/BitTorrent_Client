@@ -2,10 +2,8 @@
 
 #include <curl/curl.h>
 
+#include "spdlog/spdlog.h"
 #include "utils.hpp"
-// #include "cpr/cpr.h"
-
-// #define TRACKER_TIMEOUT 15000
 
 PeerRetriever::PeerRetriever(const std::string& peerId, int port, const TorrentFileParser& tfp, long long bytesDownloaded) :
     peerId(peerId), port(port), fileSize(tfp.getLengthOne())
@@ -38,7 +36,7 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
                           "&peer_id=" + peerId + "&port=" + std::to_string(port) + "&uploaded=" + "0" +
                           "&downloaded=" + std::to_string(bytesDownloaded) +
                           "&left=" + std::to_string(tfp.getLengthOne() - bytesDownloaded) + "&compact=1");
-        // std::cerr << "Query = " << query << std::endl;
+        SPDLOG_INFO("Query is {}", query);
 
         curl_easy_setopt(curl, CURLOPT_URL, query.c_str());
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15);
@@ -48,8 +46,9 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
         res = curl_easy_perform(curl);
         if (res != CURLE_OK)
         {
-            std::cerr << "Bad curl" << std::endl;
-            std::abort();
+            // std::cerr << "Bad curl" << std::endl;
+            // std::abort();
+            ;
         }
         curl_easy_cleanup(curl);
         curl = NULL;
@@ -59,16 +58,13 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
 
 std::vector<std::pair<std::string, long long> > PeerRetriever::decodeResponse(const std::string& response)
 {
-    std::vector<std::pair<std::string, long long> > result;
+    std::vector<std::pair<std::string, long long> > result{};
 
     try
     {
         auto data = bencode::decode(response);
         auto dict = std::get<bencode::dict>(data);
         interval  = std::get<bencode::integer>(dict["interval"]);
-        // long long complete   = std::get<bencode::integer>(dict["complete"]);
-        // long long incomplete = std::get<bencode::integer>(dict["incomplete"]);
-
         try
         {
             auto peers = std::get<bencode::dict>(dict["peers"]);
@@ -80,7 +76,7 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::decodeResponse(co
             auto peers            = std::get<bencode::string>(dict["peers"]);
             const int segmentSize = 6;
 
-            for (int i = 0; i + segmentSize <= peers.size(); i += segmentSize)
+            for (size_t i = 0; i + segmentSize <= peers.size(); i += segmentSize)
             {
                 std::string segment        = peers.substr(i, segmentSize);
                 std::string IPAddressBytes = segment.substr(0, 4);
@@ -94,8 +90,10 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::decodeResponse(co
     }
     catch (...)
     {
-        std::cerr << "Something bad with peer list!" << std::endl;
-        std::abort();
+        // std::cerr << "Something bad with peer list!" << std::endl;
+        // std::abort();
+        SPDLOG_ERROR("No peers from tracker");
     }
+    SPDLOG_INFO("Amount of peers: {}", result.size());
     return result;
 }

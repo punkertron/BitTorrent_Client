@@ -46,7 +46,7 @@ class Piece
     bool isHashChecked(std::string& dataToFile);
     const std::string requestBlock();
     void fillData(int begin, const std::string& data);
-    bool haveMissingBlock();
+    bool haveBlockToRequest();
     void resetAllBlocksToMissing();
 };
 

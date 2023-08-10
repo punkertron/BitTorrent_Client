@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "spdlog/spdlog.h"
 #include "utils.hpp"
 
 TorrentFileParser::TorrentFileParser(const char* filePath) : SingleMultiFile(multiFile())
@@ -46,4 +47,49 @@ TorrentFileParser::TorrentFileParser(const char* filePath) : SingleMultiFile(mul
         file.close();
         std::abort();
     }
+}
+
+const std::string& TorrentFileParser::getAnnounce() const
+{
+    return announce;
+}
+
+const long long& TorrentFileParser::getPieceLength() const
+{
+    return pieceLength;
+}
+
+const std::string& TorrentFileParser::getPieces() const
+{
+    return pieces;
+}
+
+bool TorrentFileParser::IsSingle() const
+{
+    return isSingle;
+}
+
+const std::string& TorrentFileParser::getFileName() const
+{
+    return std::get<singleFile>(SingleMultiFile).fileName;
+}
+
+long long TorrentFileParser::getLengthOne() const
+{
+    return std::get<singleFile>(SingleMultiFile).length;
+}
+
+const std::string& TorrentFileParser::getDirName() const
+{
+    return std::get<multiFile>(SingleMultiFile).dirName;
+}
+
+const bencode::list& TorrentFileParser::getFiles() const
+{
+    return std::get<multiFile>(SingleMultiFile).files;
+}
+
+const std::string& TorrentFileParser::getInfoHash() const
+{
+    return infoHash;
 }

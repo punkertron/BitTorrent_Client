@@ -1,5 +1,7 @@
 #include "PeersQueue.hpp"
 
+#include "spdlog/spdlog.h"
+
 const std::pair<std::string, long long> PeersQueue::getPeer()
 {
     std::lock_guard<std::mutex> lock(mutexPeerQueue);
@@ -30,7 +32,17 @@ bool PeersQueue::hasFreePeers()
     for (int i = 0; i < activePeers.size(); ++i)
     {
         if (activePeers[i] == false)
+        {
+            SPDLOG_INFO("PeersQueue has free members");
             return true;
+        }
     }
+    SPDLOG_INFO("PeersQueue has NOT free members");
     return false;
+}
+
+size_t PeersQueue::size()
+{
+    std::lock_guard<std::mutex> lock(mutexPeerQueue);  // Don't need it?
+    return peers.size();
 }

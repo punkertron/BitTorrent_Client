@@ -6,6 +6,7 @@
 #include "PeerRetriever.hpp"
 #include "PeersQueue.hpp"
 #include "PieceManager.hpp"
+#include "spdlog/spdlog.h"
 
 #ifndef PORT
 #define PORT 8080
@@ -16,17 +17,17 @@
 #endif
 
 #ifndef THREAD_NUM
-#define THREAD_NUM 15
+#define THREAD_NUM 10
 #endif
 
 TorrentClient::TorrentClient(const char* filePath) : tfp(filePath)
 {
+    curl_global_init(CURL_GLOBAL_DEFAULT);
     if (!tfp.IsSingle())
     {
         std::cerr << "No mitiple files right now!" << std::endl;
         std::abort();
     }
-    curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
 TorrentClient::~TorrentClient()
@@ -47,14 +48,14 @@ void TorrentClient::run()
     threads.push_back(std::move(thread));
 
     // These threads download file
-    for (int i = 0; i < THREAD_NUM && i < peers.size(); ++i)
+    for (size_t i = 0; i < THREAD_NUM && i < peers.size() + 1; ++i)
     {
         std::thread thread(&PeerConnection::start,
                            PeerConnection(tfp.getInfoHash(), std::string(PEER_ID), &pieceManager, &peersQueue));
         threads.push_back(std::move(thread));
     }
 
-    // in while loop we can update peers
+    // in while loop we can update peers. Peers could be empty if curl failed
     auto lastUpdate = std::chrono::steady_clock::now();
     while (true)
     {
@@ -69,6 +70,7 @@ void TorrentClient::run()
             peers      = p.getPeers();
             for (auto peer : peers)
                 peersQueue.push_back(peer);
+            SPDLOG_INFO("PeersQueue.size() = {}", peersQueue.size());
         }
         std::this_thread::sleep_for(std::chrono::seconds(3));
     }

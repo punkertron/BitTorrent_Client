@@ -9,6 +9,7 @@
 
 #include "Message.hpp"
 #include "connection.hpp"
+#include "spdlog/spdlog.h"
 #include "unistd.h"
 #include "utils.hpp"
 
@@ -49,7 +50,7 @@ void PeerConnection::start()
         {
             if (pieceManagerPtr->isComplete())
                 return;
-            std::this_thread::sleep_for(std::chrono::seconds(2));
+            std::this_thread::sleep_for(std::chrono::seconds(3));
         }
 
         try
@@ -94,7 +95,7 @@ void PeerConnection::start()
         }
         catch (const std::runtime_error& e)
         {
-            // std::cerr << e.what() << std::endl;
+            SPDLOG_ERROR("PeerIp = {}\tPeerPort = {}\tError: {}", peer.first, peer.second, e.what());
             if (sockfd > 0)
                 close(sockfd);
             sockfd = -1;
@@ -145,9 +146,8 @@ void PeerConnection::sendInterest()
 void PeerConnection::requestPiece()
 {
     std::string request = Message(eMessageType::Request, pieceManagerPtr->requestPiece(peerPeerId)).getMessageStr();
-    // std::cerr << "-------------" << std::endl;
-    // std::cerr << getIntFromStr(request.substr(5, 4)) << std::endl;
-    // std::cerr << getIntFromStr(request.substr(9, 4)) << std::endl;
+    SPDLOG_INFO("Request: pieceIndex = {}\toffset = {}\tblockSize = {}", getIntFromStr(request.substr(5, 4)),
+                getIntFromStr(request.substr(9, 4)), getIntFromStr(request.substr(13, 4)));
     sendData(sockfd, request);
     requestPending = true;
 }

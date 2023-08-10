@@ -39,7 +39,7 @@ class PeerRetriever
         return allPeers;
     }
 
-    const long long getInterval() const
+    long long getInterval() const
     {
         return interval;
     }

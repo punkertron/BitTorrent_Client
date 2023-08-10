@@ -13,6 +13,7 @@
 #include <memory>
 #include <stdexcept>
 
+#include "spdlog/spdlog.h"
 #include "utils.hpp"
 
 int createConnection(const std::string& ip, const long long port)

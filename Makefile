@@ -21,7 +21,7 @@ OBJS		= ${addprefix ${OBJS_PATH}/, ${OBJS_FILES}}
 
 #/usr/local/include
 INC_DIR		= ./incs
-INC			= ${INC_DIR} ./bencode
+INC			= ${INC_DIR} ./bencode ./spdlog
 INCLUDE		= $(INC:%=-I %)
 
 LDLIBS		= -lcryptopp -lcurl
@@ -29,7 +29,7 @@ LDLIBS		= -lcryptopp -lcurl
 DEPS		= ${OBJS:%.o=%.d}
 
 CXX			= g++
-CXXFLAGS	= -std=c++17 -g3 -O0 -fsanitize=thread  #-march=native # -g -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined
+CXXFLAGS	= -std=c++17 -O2 -march=native # -g -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined
 
 RM			= rm -rf
 

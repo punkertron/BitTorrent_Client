@@ -4,6 +4,8 @@
 
 #include <cstring>
 
+#include "spdlog/spdlog.h"
+
 Piece::Piece(int blockCount, long long totalLength, const std::string& hash, bool isLastPiece) :
     blocks(setBlocks(blockCount, totalLength, isLastPiece)), hash(hash)
 {
@@ -24,7 +26,7 @@ std::vector<std::unique_ptr<Piece::Block> > Piece::setBlocks(int blockCount, lon
             block->length = totalLength % BLOCK_SIZE;
             if (!block->length)
                 block->length = BLOCK_SIZE;
-            // std::cerr << "offset = " << offset << " blockLength = " << block->length << std::endl;
+            SPDLOG_INFO("Last Piece: offset = {}, blockLength = {}", offset, block->length);
         }
         else
             block->length = BLOCK_SIZE;
@@ -52,7 +54,7 @@ bool Piece::isReadyToRequest(const Block* ptr)
 
 const std::string Piece::requestBlock()
 {
-    for (int i = 0; i < blocks.size(); ++i)
+    for (size_t i = 0; i < blocks.size(); ++i)
     {
         if (isReadyToRequest(blocks[i].get()))
         {
@@ -67,7 +69,7 @@ const std::string Piece::requestBlock()
 
 void Piece::fillData(int begin, const std::string& data)
 {
-    for (int i = 0, n = blocks.size(); i < n; ++i)
+    for (size_t i = 0, n = blocks.size(); i < n; ++i)
     {
         if (blocks[i].get()->offset == begin)
         {
@@ -84,17 +86,20 @@ void Piece::fillData(int begin, const std::string& data)
 
 bool Piece::isHashChecked(std::string& dataToFile)
 {
-    for (int i = 0; i < blocks.size(); ++i)
+    for (size_t i = 0; i < blocks.size(); ++i)
         dataToFile += blocks[i].get()->data;
 
     if (hexDecode(sha1(dataToFile)) != hash)
-        throw std::runtime_error("Hash check failed");
+    {
+        return false;
+        // throw std::runtime_error("Hash check failed");
+    }
     return true;
 }
 
-bool Piece::haveMissingBlock()
+bool Piece::haveBlockToRequest()
 {
-    for (int i = 0; i < blocks.size(); ++i)
+    for (size_t i = 0; i < blocks.size(); ++i)
     {
         if (isReadyToRequest(blocks[i].get()))
             return true;
@@ -104,7 +109,7 @@ bool Piece::haveMissingBlock()
 
 void Piece::resetAllBlocksToMissing()
 {
-    for (int i = 0; i < blocks.size(); ++i)
+    for (size_t i = 0; i < blocks.size(); ++i)
     {
         blocks[i].get()->status = BlockStatus::missing;
     }

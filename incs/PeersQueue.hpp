@@ -19,6 +19,7 @@ class PeersQueue
     const std::pair<std::string, long long> getPeer();
     void push_back(const std::pair<std::string, long long>& peer);
     bool hasFreePeers();
+    size_t size();
 };
 
 #endif  // PEERS_QUEUE_HPP

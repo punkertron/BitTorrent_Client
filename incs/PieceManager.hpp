@@ -26,6 +26,7 @@ class PieceManager
         std::chrono::steady_clock::now();  // start of the downloading
 
     std::mutex mutex;
+    std::mutex mutexWrite;
 
     std::vector<std::unique_ptr<Piece> > initialisePieces();
     void writeDataToFile(int index, const std::string& dataToFile);
