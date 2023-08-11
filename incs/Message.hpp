@@ -24,7 +24,7 @@ class Message
     eMessageType MessageType;
     std::string payload;
 
-    eMessageType getMessageTypeFromMessage(const std::string& str);
+    inline eMessageType getMessageTypeFromMessage(const std::string& str);
     const std::string getPayloadFromMessage(const std::string& str);
 
    public:
@@ -33,26 +33,10 @@ class Message
     ~Message() = default;
 
     const std::string getMessageStr() const;
-
-    inline bool isKeepAlive() const
-    {
-        return length == 0;
-    }
-
-    inline const int getLength() const
-    {
-        return length;
-    }
-
-    inline eMessageType getMessageType() const
-    {
-        return MessageType;
-    }
-
-    inline const std::string& getPayload() const
-    {
-        return payload;
-    }
+    bool isKeepAlive() const;
+    int getLength() const;
+    eMessageType getMessageType() const;
+    const std::string& getPayload() const;
 };
 
 #endif  // MESSAGE_HPP

@@ -1,7 +1,6 @@
 #ifndef PIECE_HPP
 #define PIECE_HPP
 
-#include <algorithm>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -16,7 +15,7 @@
 class Piece
 {
    private:
-    enum class BlockStatus : int
+    enum class eBlockStatus : int
     {
         missing   = 0,
         pending   = 1,
@@ -27,7 +26,7 @@ class Piece
     {
         int offset;
         int length;
-        BlockStatus status;
+        eBlockStatus status;
         std::string data;
         std::chrono::time_point<std::chrono::steady_clock> timeRequest;
     };

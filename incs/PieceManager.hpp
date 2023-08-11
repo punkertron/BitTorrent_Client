@@ -15,7 +15,8 @@
 class PieceManager
 {
    private:
-    const TorrentFileParser tfp = nullptr;
+    const TorrentFileParser tfp;
+    const char* downloadPath;
     int totalPieces;
     int totalDownloaded = 0;
     std::unordered_map<std::string, std::vector<bool> > peerBitfield;  // vector<bool> is efficient
@@ -33,7 +34,7 @@ class PieceManager
     void display(double n, long long fileSize, int lengthOfSize);
 
    public:
-    PieceManager(const TorrentFileParser& tfp);
+    PieceManager(const TorrentFileParser& tfp, const char* downloadPath);
     ~PieceManager();
 
     void addPeerBitfield(const std::string& peerPeerId, const std::string& payload);

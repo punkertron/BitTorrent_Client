@@ -6,13 +6,9 @@
 #include "utils.hpp"
 
 PeerRetriever::PeerRetriever(const std::string& peerId, int port, const TorrentFileParser& tfp, long long bytesDownloaded) :
-    peerId(peerId), port(port), fileSize(tfp.getLengthOne())
+    port(port), fileSize(tfp.getLengthOne()), peerId(peerId)
 {
     allPeers = std::move(retrievePeers(tfp, bytesDownloaded));
-    // for (const auto& pair : allPeers)
-    // {
-    //     std::cerr << "Ip = " << pair.first << "\t Port = " << pair.second << std::endl;
-    // }
 }
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* output)
@@ -45,13 +41,8 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         res = curl_easy_perform(curl);
         if (res != CURLE_OK)
-        {
-            // std::cerr << "Bad curl" << std::endl;
-            // std::abort();
-            ;
-        }
+            SPDLOG_DEBUG("CURL failed");
         curl_easy_cleanup(curl);
-        curl = NULL;
     }
     return decodeResponse(response);
 }
@@ -90,9 +81,7 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::decodeResponse(co
     }
     catch (...)
     {
-        // std::cerr << "Something bad with peer list!" << std::endl;
-        // std::abort();
-        SPDLOG_ERROR("No peers from tracker");
+        // SPDLOG_ERROR("No peers from tracker");
     }
     SPDLOG_INFO("Amount of peers: {}", result.size());
     return result;

@@ -10,7 +10,7 @@ TorrentFileParser::TorrentFileParser(const char* filePath) : SingleMultiFile(mul
     std::ifstream file(filePath, std::ios::binary);
     if (!file.is_open())
     {
-        std::cerr << "Cannot open .torrent file" << std::endl;
+        std::cerr << "Can't open " << filePath << std::endl;
         std::abort();
     }
 

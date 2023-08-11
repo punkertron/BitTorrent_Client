@@ -5,11 +5,8 @@
 const std::pair<std::string, long long> PeersQueue::getPeer()
 {
     std::lock_guard<std::mutex> lock(mutexPeerQueue);
-    while (i < peers.size() && activePeers[i])  // FIXME: How exit from this loop?
-    {
+    while (i < peers.size() && activePeers[i])
         ++i;
-    }
-    // std::cerr << "--------------" << std::endl;
     if (i == peers.size())
     {
         i = 0;
@@ -29,15 +26,11 @@ void PeersQueue::push_back(const std::pair<std::string, long long>& peer)
 bool PeersQueue::hasFreePeers()
 {
     std::lock_guard<std::mutex> lock(mutexPeerQueue);
-    for (int i = 0; i < activePeers.size(); ++i)
+    for (size_t j = 0; j < activePeers.size(); ++j)
     {
-        if (activePeers[i] == false)
-        {
-            SPDLOG_INFO("PeersQueue has free members");
+        if (activePeers[j] == false)
             return true;
-        }
     }
-    SPDLOG_INFO("PeersQueue has NOT free members");
     return false;
 }
 

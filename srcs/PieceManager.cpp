@@ -10,17 +10,19 @@
 
 #include "spdlog/spdlog.h"
 
-#ifndef DOWNLOADS_PATH
-#define DOWNLOADS_PATH "./downloads/"
-#endif
-
 #ifndef AMOUNT_HASH_SYMBOLS
 #define AMOUNT_HASH_SYMBOLS 48
 #endif
 
-PieceManager::PieceManager(const TorrentFileParser& tfp) : tfp(tfp), Pieces(initialisePieces())
+PieceManager::PieceManager(const TorrentFileParser& tfp, const char* downloadPath) :
+    tfp(tfp), downloadPath(downloadPath), Pieces(initialisePieces())
 {
-    downloadedFile.open(DOWNLOADS_PATH + tfp.getFileName(), std::ios::binary | std::ios::out);
+    downloadedFile.open(downloadPath + tfp.getFileName(), std::ios::binary | std::ios::out);
+    if (!downloadedFile.is_open())
+    {
+        std::cerr << "Can't open " << downloadPath << tfp.getFileName() << std::endl;
+        std::abort();
+    }
 }
 
 PieceManager::~PieceManager()
@@ -192,13 +194,13 @@ static int getLength(long long num)
     return i;
 }
 
-void PieceManager::trackProgress()  // FIXME: when add double percentage format of the message broken. Need to fix this
+void PieceManager::trackProgress()
 {
     std::string fileName(tfp.getFileName());
     long long fileSize = tfp.getLengthOne();
     int lengthOfSize   = getLength(fileSize / 1'048'576) + 2;
     std::string firstLastLine(AMOUNT_HASH_SYMBOLS + 25 + lengthOfSize, '-');
-    std::cout << firstLastLine << "\nDownload: " << tfp.getFileName() << std::endl;
+    std::cout << firstLastLine << "\nDownload: " << tfp.getFileName() << "\nDirectory: " << downloadPath << std::endl;
     while (!isComplete())
     {
         mutex.lock();

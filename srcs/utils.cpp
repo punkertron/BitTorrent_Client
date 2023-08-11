@@ -37,9 +37,7 @@ std::string urlEncodeHex(const std::string& input)
     for (char ch : input)
     {
         if (isalnum(ch) || ch == '-' || ch == '_' || ch == '.' || ch == '~')
-        {
             result += ch;
-        }
         else
         {
             result += '%';
@@ -82,27 +80,13 @@ long long bytesToPort(const std::string& bytes)
 
 int getIntFromStr(const std::string& str)
 {
-    // if (str.size() != 4) {
-    //     throw std::runtime_error("Invalid input: fourBytesString must be 4 bytes long.");
-    // }
-    // int result;
-    // std::memcpy(&result, str.data(), sizeof(int)); // Copy the bytes from the string to the integer
-    // return result;
-
     if (str.size() < 4)
-    {
         throw std::runtime_error("String does not contain 4 bytes");
-    }
 
     unsigned int result = (static_cast<unsigned char>(str[0]) << 24) | (static_cast<unsigned char>(str[1]) << 16) |
                           (static_cast<unsigned char>(str[2]) << 8) | (static_cast<unsigned char>(str[3]));
 
     return static_cast<int>(result);
-}
-
-int getLengthFromMessage(const std::string& str)
-{
-    return getIntFromStr(str);
 }
 
 std::string intToBytes(int x)

@@ -5,23 +5,22 @@
 
 #include "PeersQueue.hpp"
 #include "TorrentFileParser.hpp"
-#include "bencode.hpp"
 
 class TorrentClient
 {
    private:
     TorrentFileParser tfp;
+    const char* downloadPath;
     long long interval;
     long long complete;
     long long incomplete;
-    bencode::dict peers;
 
     PeersQueue peersQueue;
 
     std::vector<std::thread> threads;
 
    public:
-    explicit TorrentClient(const char* filePath);
+    explicit TorrentClient(const char* torrentPath, const char* downloadPath);
     ~TorrentClient();
 
     void run();

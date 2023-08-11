@@ -28,17 +28,12 @@ PeerConnection::~PeerConnection()
 void PeerConnection::establishConnection()
 {
     sockfd = createConnection(peer.first, peer.second);
-    // std::cerr << "socket = " << sockfd << std::endl;
     performHandshake();
     Message msg(recieveMessage());
     if (msg.getMessageType() == eMessageType::Bitfield)
-    {
         pieceManagerPtr->addPeerBitfield(peerPeerId, msg.getPayload());
-    }
     else
-    {
-        throw std::runtime_error("No Bitfield");
-    }
+        throw std::runtime_error("No Bitfield");  // But can be without bitfield, right?
     sendInterest();
 }
 
@@ -87,9 +82,7 @@ void PeerConnection::start()
                 if (!choke)
                 {
                     if (!requestPending)
-                    {
                         requestPiece();
-                    }
                 }
             }
         }
@@ -126,14 +119,11 @@ void PeerConnection::performHandshake()
 
     if (msg.substr(0, 20) != response.substr(0, 20)        // check protocol
         || msg.substr(28, 20) != response.substr(28, 20))  // check infoHash
-    {
         throw std::runtime_error("No handshake");
-    }
     peerPeerId = response.substr(48, 20);
-    // std::cerr << peerPeerId << std::endl;
 }
 
-Message PeerConnection::recieveMessage()  // TODO: or get bitfield
+Message PeerConnection::recieveMessage()
 {
     return Message(recieveData(sockfd, 0));
 }

@@ -10,7 +10,7 @@
 class PeersQueue
 {
    private:
-    int i = 0;
+    size_t i = 0;
     std::mutex mutexPeerQueue;
     std::vector<std::pair<std::string, long long> > peers;
     std::vector<bool> activePeers;

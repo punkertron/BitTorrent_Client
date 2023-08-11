@@ -20,7 +20,8 @@
 #define THREAD_NUM 10
 #endif
 
-TorrentClient::TorrentClient(const char* filePath) : tfp(filePath)
+TorrentClient::TorrentClient(const char* torrentPath, const char* downloadPath) :
+    tfp(torrentPath), downloadPath(downloadPath)
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     if (!tfp.IsSingle())
@@ -37,7 +38,7 @@ TorrentClient::~TorrentClient()
 
 void TorrentClient::run()
 {
-    PieceManager pieceManager(tfp);
+    PieceManager pieceManager(tfp, downloadPath);
     PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0);
     std::vector<std::pair<std::string, long long> > peers(p.getPeers());
     for (auto peer : peers)
@@ -48,7 +49,8 @@ void TorrentClient::run()
     threads.push_back(std::move(thread));
 
     // These threads download file
-    for (size_t i = 0; i < THREAD_NUM && i < peers.size() + 1; ++i)
+    bool peersExist = peers.size();
+    for (size_t i = 0; i < THREAD_NUM && i < peers.size() + (!peersExist); ++i)
     {
         std::thread thread(&PeerConnection::start,
                            PeerConnection(tfp.getInfoHash(), std::string(PEER_ID), &pieceManager, &peersQueue));
@@ -70,14 +72,13 @@ void TorrentClient::run()
             peers      = p.getPeers();
             for (auto peer : peers)
                 peersQueue.push_back(peer);
-            SPDLOG_INFO("PeersQueue.size() = {}", peersQueue.size());
         }
         std::this_thread::sleep_for(std::chrono::seconds(3));
     }
 
     for (auto& thr : threads)
     {
-        if (thr.joinable())
+        if (thr.joinable())  // delete this check?
             thr.join();
     }
 }
