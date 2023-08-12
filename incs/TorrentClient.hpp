@@ -30,6 +30,9 @@ class TorrentClient
     TorrentClient(TorrentClient&& other)                 = delete;
 
     void run();
+
+    long long getFileSize() const;
+    const std::string& getFileName() const;
 };
 
 #endif  // TORRENT_CLIENT_HPP

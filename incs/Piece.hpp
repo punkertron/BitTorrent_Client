@@ -47,11 +47,12 @@ class Piece
     Piece(Piece&& other)                 = delete;
 
     bool isFull() const;
-    bool isHashChecked(std::string& dataToFile);
+    bool isHashChecked(const std::string& dataToFile) const;
     const std::string requestBlock();
     void fillData(int begin, const std::string& data);
     bool haveBlockToRequest();
     void resetAllBlocksToMissing();
+    void fillDataToStr(std::string& dataToFile);
 };
 
 #endif  // PIECE_HPP

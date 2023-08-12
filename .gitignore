@@ -14,3 +14,5 @@ Qt/*
 !Qt/main_Qt.cpp
 !Qt/Window.hpp
 !Qt/Window.cpp
+
+libtorrent_core.a

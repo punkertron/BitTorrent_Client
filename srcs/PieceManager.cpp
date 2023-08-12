@@ -121,6 +121,7 @@ void PieceManager::blockReceived(int index, int begin, const std::string& blockS
         std::string dataToFile;
         if (ptr->isFull())
         {
+            ptr->fillDataToStr(dataToFile);
             if (ptr->isHashChecked(dataToFile))
             {
                 Pieces[index] = nullptr;

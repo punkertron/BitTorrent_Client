@@ -1,11 +1,13 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
+#include <QProgressBar>
 #include <QTextEdit>
+#include <QVBoxLayout>
 #include <QWidget>
 
 class QPushButton;
-class MainWindow : public QWidget
+class Window : public QWidget
 {
     Q_OBJECT
    private:
@@ -15,21 +17,34 @@ class MainWindow : public QWidget
 
     std::string torrentPath;
     std::string downloadDir;
+    std::string fileName;
+    long long fileSize;
 
     QTextEdit *m_torrentPathText;
     QTextEdit *m_downloadDirText;
+    QVBoxLayout *layout;
 
+    QPushButton *newButtonObject(const char *buttonName, const QString &colour);
+    QProgressBar *newProgressBarObject(int val);
+
+    void initialScreen();
     void setCustomTextLines();
     void setCustomButtons();
     void setCustomLayout();
+    void clearLayout();
+
+    void downloadFile();
+
+    void displayDownloadStatus();
 
    private slots:
     void openTorrent();
     void selectDirectory();
     void startDownload();
+    void returnBack();
 
    public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit Window(QWidget *parent = 0);
 };
 
 #endif  // WINDOW_HPP

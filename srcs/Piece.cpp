@@ -85,14 +85,9 @@ void Piece::fillData(int begin, const std::string& data)
     throw std::runtime_error("No such offset in blocks");
 }
 
-bool Piece::isHashChecked(std::string& dataToFile)
+bool Piece::isHashChecked(const std::string& dataToFile) const
 {
-    for (size_t i = 0; i < blocks.size(); ++i)
-        dataToFile += blocks[i].get()->data;
-
-    if (hexDecode(sha1(dataToFile)) != hash)
-        return false;
-    return true;
+    return hexDecode(sha1(dataToFile)) == hash;
 }
 
 bool Piece::haveBlockToRequest()
@@ -109,4 +104,10 @@ void Piece::resetAllBlocksToMissing()
 {
     for (size_t i = 0; i < blocks.size(); ++i)
         blocks[i].get()->status = eBlockStatus::missing;
+}
+
+void Piece::fillDataToStr(std::string& dataToFile)
+{
+    for (size_t i = 0; i < blocks.size(); ++i)
+        dataToFile += blocks[i].get()->data;
 }

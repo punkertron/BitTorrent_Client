@@ -85,3 +85,13 @@ void TorrentClient::run()
             thr.join();
     }
 }
+
+long long TorrentClient::getFileSize() const
+{
+    return tfp.getLengthOne();
+}
+
+const std::string& TorrentClient::getFileName() const
+{
+    return tfp.getFileName();
+}
