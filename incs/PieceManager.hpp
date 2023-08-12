@@ -34,8 +34,13 @@ class PieceManager
     void display(double n, long long fileSize, int lengthOfSize);
 
    public:
-    PieceManager(const TorrentFileParser& tfp, const char* downloadPath);
+    explicit PieceManager(const TorrentFileParser& tfp, const char* downloadPath);
     ~PieceManager();
+
+    PieceManager()                                     = delete;
+    PieceManager& operator=(const PieceManager& other) = delete;
+    PieceManager(const PieceManager& other)            = delete;
+    PieceManager(PieceManager&& other)                 = delete;
 
     void addPeerBitfield(const std::string& peerPeerId, const std::string& payload);
 

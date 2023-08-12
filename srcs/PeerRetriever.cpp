@@ -86,3 +86,13 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::decodeResponse(co
     SPDLOG_INFO("Amount of peers: {}", result.size());
     return result;
 }
+
+const std::vector<std::pair<std::string, long long> >& PeerRetriever::getPeers() const
+{
+    return allPeers;
+}
+
+long long PeerRetriever::getInterval() const
+{
+    return interval;
+}

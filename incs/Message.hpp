@@ -28,9 +28,14 @@ class Message
     const std::string getPayloadFromMessage(const std::string& str);
 
    public:
-    Message(const std::string& str);
-    Message(const eMessageType e, const std::string& str = "");
+    explicit Message(const std::string& str);
+    explicit Message(const eMessageType e, const std::string& str = "");
     ~Message() = default;
+
+    Message()                                = delete;
+    Message& operator=(const Message& other) = delete;
+    Message(const Message& other)            = delete;
+    Message(Message&& other)                 = delete;
 
     const std::string getMessageStr() const;
     bool isKeepAlive() const;

@@ -23,6 +23,11 @@ class TorrentClient
     explicit TorrentClient(const char* torrentPath, const char* downloadPath);
     ~TorrentClient();
 
+    TorrentClient()                                      = delete;
+    TorrentClient& operator=(const TorrentClient& other) = delete;
+    TorrentClient(const TorrentClient& other)            = delete;
+    TorrentClient(TorrentClient&& other)                 = delete;
+
     void run();
 };
 

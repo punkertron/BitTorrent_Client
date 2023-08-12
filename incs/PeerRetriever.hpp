@@ -15,10 +15,6 @@ struct Peer
 class PeerRetriever
 {
    private:
-    PeerRetriever();
-    PeerRetriever(const PeerRetriever&);
-    PeerRetriever(PeerRetriever&&);
-
     int port;
     long long fileSize;
     long long interval;
@@ -32,17 +28,13 @@ class PeerRetriever
     ~PeerRetriever()                                     = default;
     PeerRetriever& operator=(const PeerRetriever& other) = default;
 
+    PeerRetriever()                           = delete;
+    PeerRetriever(const PeerRetriever& other) = delete;
+    PeerRetriever(PeerRetriever&& other)      = delete;
+
     std::vector<std::pair<std::string, long long> > retrievePeers(const TorrentFileParser& tfp, long long bytesDownloaded);
-
-    const std::vector<std::pair<std::string, long long> >& getPeers() const
-    {
-        return allPeers;
-    }
-
-    long long getInterval() const
-    {
-        return interval;
-    }
+    const std::vector<std::pair<std::string, long long> >& getPeers() const;
+    long long getInterval() const;
 };
 
 #endif  // PEER_RETRIEVER_HPP

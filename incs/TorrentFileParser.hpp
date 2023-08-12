@@ -30,7 +30,14 @@ class TorrentFileParser
     std::variant<singleFile, multiFile> SingleMultiFile;  // TODO: add correct parsing of multiFile
 
    public:
-    TorrentFileParser(const char* filePath);
+    explicit TorrentFileParser(const char* filePath);
+    ~TorrentFileParser()                              = default;
+    TorrentFileParser(const TorrentFileParser& other) = default;
+
+    TorrentFileParser()                                          = delete;
+    TorrentFileParser& operator=(const TorrentFileParser& other) = delete;
+    TorrentFileParser(TorrentFileParser&& other)                 = delete;
+
     const std::string& getAnnounce() const;
     const long long& getPieceLength() const;
     const std::string& getPieces() const;

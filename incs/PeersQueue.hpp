@@ -16,6 +16,12 @@ class PeersQueue
     std::vector<bool> activePeers;
 
    public:
+    PeersQueue()                                   = default;
+    ~PeersQueue()                                  = default;
+    PeersQueue& operator=(const PeersQueue& other) = delete;
+    PeersQueue(const PeersQueue& other)            = delete;
+    PeersQueue(PeersQueue&& other)                 = delete;
+
     const std::pair<std::string, long long> getPeer();
     void push_back(const std::pair<std::string, long long>& peer);
     bool hasFreePeers();

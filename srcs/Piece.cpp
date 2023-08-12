@@ -50,7 +50,7 @@ bool Piece::isReadyToRequest(const Block* ptr)
     return (ptr->status == eBlockStatus::missing ||
             (ptr->status == eBlockStatus::pending &&
              std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - ptr->timeRequest).count() >
-                 10000));  // If block is pending more than 10 sec
+                 7000));  // If block is pending more than 7 sec
 }
 
 const std::string Piece::requestBlock()

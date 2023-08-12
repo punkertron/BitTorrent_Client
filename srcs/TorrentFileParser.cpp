@@ -2,7 +2,6 @@
 
 #include <fstream>
 
-#include "spdlog/spdlog.h"
 #include "utils.hpp"
 
 TorrentFileParser::TorrentFileParser(const char* filePath) : SingleMultiFile(multiFile())

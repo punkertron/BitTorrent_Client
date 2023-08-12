@@ -30,8 +30,15 @@ class PeerConnection
     void establishConnection();
 
    public:
-    PeerConnection(const std::string& infoHash, const std::string& peerId, PieceManager* pieceManagerPtr, PeersQueue* peers);
+    explicit PeerConnection(const std::string& infoHash, const std::string& peerId, PieceManager* pieceManagerPtr,
+                            PeersQueue* peers);
     ~PeerConnection();
+    PeerConnection(PeerConnection&& other) = default;
+
+    PeerConnection()                                       = delete;
+    PeerConnection& operator=(const PeerConnection& other) = delete;
+    PeerConnection(const PeerConnection& other)            = delete;
+
     void start();
 };
 

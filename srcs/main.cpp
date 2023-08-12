@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 
@@ -29,11 +28,11 @@ int main(int argc, char **argv)
     std::string downloadPath;
     try
     {
-        cxxopts::Options options("torrent-client", "The best BitTorrent Client! v1.0");
+        cxxopts::Options options("torrent_client", "The best BitTorrent Client! v1.0");
         options.add_options()("t,torrent", "Location of the .torrent", cxxopts::value<std::string>())(
             "d,directory", "Where to save file", cxxopts::value<std::string>()->default_value(defaultDownloadPath))(
-            "l,logs", "Enable logs (./logs/logs.txt)", cxxopts::value<bool>()->default_value("false"))  // a bool parameter
-            ("h,help", "Print usage");
+            "l,logs", "Enable logs (./logs/logs.txt)", cxxopts::value<bool>()->default_value("false"))("h,help",
+                                                                                                       "Print usage");
         auto result = options.parse(argc, argv);
 
         if (result.count("help"))
@@ -61,7 +60,7 @@ int main(int argc, char **argv)
             std::ofstream ofs("logs/logs.txt", std::ios::trunc);
             ofs.close();
         }
-        catch (...)
+        catch (...)  // do nothing?
         {
         }
 

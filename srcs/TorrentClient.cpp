@@ -17,7 +17,7 @@
 #endif
 
 #ifndef THREAD_NUM
-#define THREAD_NUM 10
+#define THREAD_NUM 15
 #endif
 
 TorrentClient::TorrentClient(const char* torrentPath, const char* downloadPath) :

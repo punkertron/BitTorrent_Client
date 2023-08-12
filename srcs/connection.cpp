@@ -89,7 +89,7 @@ static void recvData(int sockfd, char* buffer, int size)
     while (sumReceived < size)
     {
         auto diff = std::chrono::steady_clock::now() - startTime;
-        if (std::chrono::duration<double, std::milli>(diff).count() > 3000)  // 3 sec
+        if (std::chrono::duration<double, std::milli>(diff).count() > 5000)  // 5 sec
             throw std::runtime_error("Read timeout");
         bytesReceived = recv(sockfd, buffer + sumReceived, size - sumReceived, 0);
         if (bytesReceived == -1)

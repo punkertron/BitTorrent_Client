@@ -38,8 +38,13 @@ class Piece
     inline bool isReadyToRequest(const Block* ptr);
 
    public:
-    Piece(int blockCount, long long totalLength, const std::string& hash, bool isLastPiece);
+    explicit Piece(int blockCount, long long totalLength, const std::string& hash, bool isLastPiece);
     ~Piece() = default;
+
+    Piece()                              = delete;
+    Piece& operator=(const Piece& other) = delete;
+    Piece(const Piece& other)            = delete;
+    Piece(Piece&& other)                 = delete;
 
     bool isFull() const;
     bool isHashChecked(std::string& dataToFile);

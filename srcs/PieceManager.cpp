@@ -200,7 +200,7 @@ void PieceManager::trackProgress()
     long long fileSize = tfp.getLengthOne();
     int lengthOfSize   = getLength(fileSize / 1'048'576) + 2;
     std::string firstLastLine(AMOUNT_HASH_SYMBOLS + 25 + lengthOfSize, '-');
-    std::cout << firstLastLine << "\nDownload: " << tfp.getFileName() << "\nDirectory: " << downloadPath << std::endl;
+    std::cout << firstLastLine << "\nFile: " << tfp.getFileName() << "\nDirectory: " << downloadPath << std::endl;
     while (!isComplete())
     {
         mutex.lock();

@@ -53,7 +53,7 @@ void PeerConnection::start()
             establishConnection();
             while (!pieceManagerPtr->isComplete())
             {
-                Message msg = recieveMessage();
+                Message msg(recieveMessage());
                 switch (msg.getMessageType())
                 {
                     case eMessageType::Choke:
