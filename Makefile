@@ -1,8 +1,10 @@
-NAME			= torrent_client
+LIB_NAME		= libtorrent_core.a
+TERMIANL_NAME	= torrent_client
+QT_NAME			= Torrent\ Client\ Qt
 
+# build libtorrent_core.a
 SRCS_PATH		= ./srcs
-SRCS_FILES		= main.cpp \
-					TorrentClient.cpp \
+SRCS_FILES		= TorrentClient.cpp \
 					TorrentFileParser.cpp \
 					PeerRetriever.cpp \
 					PeerConnection.cpp \
@@ -16,44 +18,90 @@ SRCS_FILES		= main.cpp \
 OBJS_PATH	= ./objs
 OBJS_FILES	= ${SRCS_FILES:.cpp=.o}
 OBJS		= ${addprefix ${OBJS_PATH}/, ${OBJS_FILES}}
+DEPS_LIB	= ${OBJS:%.o=%.d}
+
+# build terminal-based program
+TERMINAL_SRCS_PATH	= ./terminal_main
+TERMINAL_SRCS_FILES	= main.cpp
+TERMINAL_OBJS_PATH	= ./terminal_objs
+TERMINAL_OBJS_FILES	= ${TERMINAL_SRCS_FILES:.cpp=.o}
+TERMINAL_OBJS		= ${addprefix ${TERMINAL_OBJS_PATH}/, ${TERMINAL_OBJS_FILES}}
+DEPS_TERMINAL		= ${TERMINAL_OBJS:%.o=%.d}
+
+# build GUI
+QT_DIR		= ./Qt
+QT_SRCS		= main_Qt.cpp Window.cpp Window.hpp
+QT_FILES	= ${addprefix ${QT_DIR}/, ${QT_SRCS}}
 
 INC_DIR		= ./incs
 INC			= ${INC_DIR} ./bencode ./spdlog ./cxxopts
-INCLUDE		= $(INC:%=-I %)
+INC_QT		= ${INC:%=../%}
+INCLUDE		= ${INC:%=-I %}
 
 LDLIBS		= -lcryptopp -lcurl
-
-DEPS		= ${OBJS:%.o=%.d}
 
 CXX			= g++
 CXXFLAGS	= -std=c++17 -Wall -Wextra -O2 -march=native
 #-g -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined #-fsanitize=thread
 #-g3 -O0 -fsanitize=thread
 
+LIBC		= ar rcs
+
 RM			= rm -rf
 
-all: ${NAME}
+all: ${LIB_NAME} ${TERMIANL_NAME} ${QT_NAME}
 
-${NAME}: ${OBJS}
-	${CXX} ${CXXFLAGS} ${INCLUDE} ${OBJS} ${LDLIBS} -o ${NAME}
+${LIB_NAME}: ${OBJS}
+	${LIBC} ${LIB_NAME} ${OBJS}
 
+${TERMIANL_NAME}: ${TERMINAL_OBJS}
+	${CXX} ${CXXFLAGS} ${INCLUDE} ${TERMINAL_OBJS} ${LIB_NAME} ${LDLIBS} -o ${TERMIANL_NAME}
+
+${QT_NAME}: ${QT_FILES}
+	cd ${QT_DIR};\
+	qmake -project -o ${QT_NAME} \
+		"QT=widgets" \
+		"INCPATH+=${INC_QT}" \
+		"LIBS+=../${LIB_NAME} ${LDLIBS}" \
+		"QMAKE_CXXFLAGS+=${CXXFLAGS}";\
+	qmake;\
+	make -C .;\
+	mv ${QT_NAME} ../
+
+
+# lib files
 ${OBJS_PATH}/%.o : ${SRCS_PATH}/%.cpp | ${OBJS_PATH}
 	${CXX} ${CXXFLAGS} ${INCLUDE} -MMD -MP -c $< -o $@
+
+-include ${DEPS_LIB}
 
 ${OBJS_PATH}:
 	mkdir -p ${OBJS_PATH}
 
--include ${DEPS}
+
+# terminal-based files
+${TERMINAL_OBJS_PATH}/%.o : ${TERMINAL_SRCS_PATH}/%.cpp | ${TERMINAL_OBJS_PATH}
+	${CXX} ${CXXFLAGS} ${INCLUDE} -MMD -MP -c $< -o $@
+
+-include ${DEPS_TERMINAL}
+
+${TERMINAL_OBJS_PATH}:
+	mkdir -p ${TERMINAL_OBJS_PATH}
+
 
 clean:
-	${RM} ${OBJS_PATH}
+	${RM} ${OBJS_PATH} ${TERMINAL_OBJS_PATH}
+	make clean -C ${QT_DIR}
 
 fclean: clean
-	${RM} ${NAME}
+	${RM} ${LIB_NAME} ${TERMINAL_NAME} ${QT_NAME}
+	${RM} ${QT_DIR}/.qmake.stash ${QT_DIR}/Makefile ${QT_DIR}/${QT_NAME}.pro
 
-re: fclean | ${OBJS_PATH} ${NAME}
+re: fclean | ${OBJS_PATH} ${TERMINAL_OBJS_PATH} ${TERMINAL_NAME}
 
 format:
-	clang-format -i ${SRCS_PATH}/* ${INC_DIR}/*
+	clang-format -i ${SRCS_PATH}/* ${INC_DIR}/* \
+		${TERMINAL_SRCS_PATH}/* \
+		${QT_FILES}
 
 .PHONY: all clean fclean re format

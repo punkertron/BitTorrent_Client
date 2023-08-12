@@ -9,6 +9,7 @@
 class TorrentClient
 {
    private:
+    bool trackProgress;
     TorrentFileParser tfp;
     const char* downloadPath;
     long long interval;
@@ -20,7 +21,7 @@ class TorrentClient
     std::vector<std::thread> threads;
 
    public:
-    explicit TorrentClient(const char* torrentPath, const char* downloadPath);
+    explicit TorrentClient(const char* torrentPath, const char* downloadPath, bool trackProgress = true);
     ~TorrentClient();
 
     TorrentClient()                                      = delete;

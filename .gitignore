@@ -8,3 +8,9 @@ test.cpp
 a.out
 test.txt
 logs
+
+Qt/*
+!Qt/resources
+!Qt/main_Qt.cpp
+!Qt/Window.hpp
+!Qt/Window.cpp

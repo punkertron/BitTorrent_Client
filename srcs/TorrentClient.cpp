@@ -20,8 +20,8 @@
 #define THREAD_NUM 15
 #endif
 
-TorrentClient::TorrentClient(const char* torrentPath, const char* downloadPath) :
-    tfp(torrentPath), downloadPath(downloadPath)
+TorrentClient::TorrentClient(const char* torrentPath, const char* downloadPath, bool trackProgress) :
+    trackProgress(trackProgress), tfp(torrentPath), downloadPath(downloadPath)
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     if (!tfp.IsSingle())
@@ -44,9 +44,12 @@ void TorrentClient::run()
     for (auto peer : peers)
         peersQueue.push_back(peer);
 
-    // This thread displays download status
-    std::thread thread(&PieceManager::trackProgress, std::ref(pieceManager));
-    threads.push_back(std::move(thread));
+    if (trackProgress)  // We don't need this thread if we use Qt
+    {
+        // This thread displays download status
+        std::thread thread(&PieceManager::trackProgress, std::ref(pieceManager));
+        threads.push_back(std::move(thread));
+    }
 
     // These threads download file
     bool peersExist = peers.size();
