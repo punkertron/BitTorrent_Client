@@ -1,9 +1,9 @@
 #include <QApplication>
 #include <filesystem>
 #include <fstream>
+#include <string>
 
 #include "Window.hpp"
-#include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/spdlog.h"
 
 int main(int argc, char **argv)

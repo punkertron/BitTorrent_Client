@@ -4,7 +4,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QProgressBar>
-#include <QPushButton>
 #include <QSize>
 #include <QSpacerItem>
 #include <QWindow>
@@ -13,6 +12,8 @@
 #include <thread>
 
 #include "TorrentClient.hpp"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/spdlog.h"
 
 static const std::string defaultDownloadPath()
 {
@@ -33,8 +34,8 @@ Window::Window(QWidget* parent) : QWidget(parent), downloadDir(defaultDownloadPa
     setStyleSheet("background-color: rgba(249, 255, 250, 1);");
     setWindowIcon(QIcon(QCoreApplication::applicationDirPath() + QString("/Qt/resources/torrent_logo.png")));
     setWindowTitle("Torrent Client Qt");
-    setMinimumSize(650, 300);
-    resize(650, 300);
+    setMinimumSize(650, 350);
+    resize(650, 350);
 
     initialScreen();
 }
@@ -42,6 +43,7 @@ Window::Window(QWidget* parent) : QWidget(parent), downloadDir(defaultDownloadPa
 void Window::openTorrent()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Select Torrent File", "", "Torrent files (*.torrent)");
+    SPDLOG_INFO("User picked torrent file: {}", filePath.toStdString());
     if (!filePath.isEmpty())
     {
         torrentPath = filePath.toStdString();
@@ -53,6 +55,7 @@ void Window::selectDirectory()
 {
     QString dirPath = QFileDialog::getExistingDirectory(this, "Select Directory", "",
                                                         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    SPDLOG_INFO("User picked download directory: {}", dirPath.toStdString());
     if (!dirPath.isEmpty())
     {
         downloadDir = dirPath.toStdString();
@@ -121,6 +124,7 @@ void Window::setCustomLayout()
     layout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
     layout->addWidget(m_buttonStartDownload, 0, Qt::AlignmentFlag::AlignCenter);
     layout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Fixed));
+    layout->addWidget(m_cbLogs, 0, Qt::AlignmentFlag::AlignCenter);
     setLayout(layout);
 }
 
@@ -138,6 +142,11 @@ void Window::downloadFile()
         isError = true;
         QMessageBox::critical(this, "Error", e.what());
     }
+}
+
+void Window::showCriticalMessageBox(const QString& message)
+{
+    QMessageBox::critical(this, "Error", message);
 }
 
 QProgressBar* Window::newProgressBarObject(int val)
@@ -198,7 +207,6 @@ void Window::displayDownloadStatus()
         }
         percent = static_cast<double>(currentFileSize) / fileSize;
         progressBar->setValue(percent * 100);
-        QCoreApplication::processEvents();
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
@@ -208,7 +216,7 @@ void Window::displayDownloadStatus()
     fileText = newTextObject();
     fileText->setText(QString(fileName.c_str()));
 
-    progressBar = newProgressBarObject(percent);
+    progressBar = newProgressBarObject(percent * 100);
 
     QPushButton* returnBack = newButtonObject("Return to main menu", "rgba(236, 245, 39, 1)");
 
@@ -219,6 +227,7 @@ void Window::displayDownloadStatus()
 
     // reset torrent data
     torrentPath = "";
+    fileName    = "";
 }
 
 void Window::startDownload()
@@ -250,8 +259,52 @@ void Window::clearLayout()
     delete layout;
 }
 
+void Window::setCheckBox()
+{
+    m_cbLogs = new QCheckBox("Enable logs (./logs/logs.txt)", this);
+    if (isLogsEnanabled)
+        m_cbLogs->setCheckState(Qt::Checked);
+    else
+        m_cbLogs->setCheckState(Qt::Unchecked);
+    QObject::connect(m_cbLogs, &QCheckBox::stateChanged, this, &Window::enableDisableLogs);  // Not signal/slot?
+}
+
+void Window::enableDisableLogs()
+{
+    if (!isLogsSetupDone)
+    {
+        const std::string filePath((QCoreApplication::applicationDirPath() + QString("/logs/logs.txt")).toStdString());
+        std::filesystem::resize_file(filePath, 0);
+
+        spdlog::set_level(spdlog::level::info);
+        auto logger = spdlog::basic_logger_mt("logger", "logs/logs.txt");
+        logger->flush_on(spdlog::level::info);
+        spdlog::set_default_logger(logger);
+        spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%-5l] [%-5t] [%s/%!]\t%v");
+        SPDLOG_INFO("Start of the logging");
+        isLogsSetupDone = true;
+        isLogsEnanabled = true;
+    }
+    else
+    {
+        if (isLogsEnanabled)
+        {
+            SPDLOG_INFO("Logs disabled");
+            spdlog::set_level(spdlog::level::off);
+            isLogsEnanabled = false;
+        }
+        else
+        {
+            spdlog::set_level(spdlog::level::info);
+            SPDLOG_INFO("Logs enabled");
+            isLogsEnanabled = true;
+        }
+    }
+}
+
 void Window::initialScreen()
 {
+    setCheckBox();
     setCustomTextLines();
     setCustomButtons();
     setCustomLayout();

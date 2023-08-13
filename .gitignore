@@ -1,4 +1,3 @@
-torrent_client
 resources
 objs
 .vscode
@@ -18,3 +17,5 @@ Qt/*
 !Qt/Window.cpp
 
 libtorrent_core.a
+torrent_client
+Torrent\ Client\ Qt
