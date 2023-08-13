@@ -1,7 +1,9 @@
 #include "TorrentFileParser.hpp"
 
 #include <fstream>
+#include <stdexcept>
 
+#include "spdlog/spdlog.h"
 #include "utils.hpp"
 
 TorrentFileParser::TorrentFileParser(const char* filePath) : SingleMultiFile(multiFile())
@@ -9,8 +11,8 @@ TorrentFileParser::TorrentFileParser(const char* filePath) : SingleMultiFile(mul
     std::ifstream file(filePath, std::ios::binary);
     if (!file.is_open())
     {
-        std::cerr << "Can't open " << filePath << std::endl;
-        std::abort();
+        SPDLOG_CRITICAL("Can't open {}", filePath);
+        throw std::runtime_error("Can't open torrent file");
     }
 
     try
@@ -42,9 +44,9 @@ TorrentFileParser::TorrentFileParser(const char* filePath) : SingleMultiFile(mul
 
     catch (...)
     {
-        std::cerr << "Something really bad!" << std::endl;
         file.close();
-        std::abort();
+        SPDLOG_CRITICAL("Something bad with torrent file parsing");
+        throw std::runtime_error("Something bad with torrent file parsing");
     }
 }
 

@@ -20,8 +20,8 @@ PieceManager::PieceManager(const TorrentFileParser& tfp, const char* downloadPat
     downloadedFile.open(downloadPath + tfp.getFileName(), std::ios::binary | std::ios::out);
     if (!downloadedFile.is_open())
     {
-        std::cerr << "Can't open " << downloadPath << tfp.getFileName() << std::endl;
-        std::abort();
+        SPDLOG_ERROR("Can't open {}{}", downloadPath, tfp.getFileName());
+        throw std::runtime_error("Can't open download file");
     }
 }
 

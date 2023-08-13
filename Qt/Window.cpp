@@ -9,6 +9,7 @@
 #include <QSpacerItem>
 #include <QWindow>
 #include <filesystem>
+#include <stdexcept>
 #include <thread>
 
 #include "TorrentClient.hpp"
@@ -125,10 +126,18 @@ void Window::setCustomLayout()
 
 void Window::downloadFile()
 {
-    TorrentClient tc(torrentPath.c_str(), downloadDir.c_str(), false);
-    fileSize = tc.getFileSize();
-    fileName = tc.getFileName();
-    tc.run();
+    try
+    {
+        TorrentClient tc(torrentPath.c_str(), downloadDir.c_str(), false);
+        fileSize = tc.getFileSize();
+        fileName = tc.getFileName();
+        tc.run();
+    }
+    catch (const std::runtime_error& e)
+    {
+        isError = true;
+        QMessageBox::critical(this, "Error", e.what());
+    }
 }
 
 QProgressBar* Window::newProgressBarObject(int val)
@@ -177,7 +186,7 @@ void Window::displayDownloadStatus()
     formatLayoutDownload(layout, fileText, progressBar, nullptr, true);
     QCoreApplication::processEvents();
 
-    while (fileSize != static_cast<long long>(currentFileSize))
+    while (static_cast<long long>(currentFileSize) != fileSize && !isError)
     {
         try
         {
@@ -199,7 +208,7 @@ void Window::displayDownloadStatus()
     fileText = newTextObject();
     fileText->setText(QString(fileName.c_str()));
 
-    progressBar = newProgressBarObject(100);
+    progressBar = newProgressBarObject(percent);
 
     QPushButton* returnBack = newButtonObject("Return to main menu", "rgba(236, 245, 39, 1)");
 
@@ -207,6 +216,8 @@ void Window::displayDownloadStatus()
 
     QObject::connect(returnBack, SIGNAL(clicked()), this, SLOT(returnBack()));
     setLayout(layout);
+
+    // reset torrent data
     torrentPath = "";
 }
 
@@ -217,11 +228,12 @@ void Window::startDownload()
         std::thread thread(&Window::downloadFile, this);
         thread.detach();
 
-        while (fileName == "")  // wait until we recieve fileName from another thread
+        while (fileName == "" && !isError)  // wait until we recieve fileName from another thread
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         clearLayout();
         displayDownloadStatus();
+        isError = false;
     }
     else
         QMessageBox::critical(this, "Error", "Provide a torrent file!");

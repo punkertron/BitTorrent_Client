@@ -26,8 +26,8 @@ TorrentClient::TorrentClient(const char* torrentPath, const char* downloadPath, 
     curl_global_init(CURL_GLOBAL_DEFAULT);
     if (!tfp.IsSingle())
     {
-        std::cerr << "No mitiple files right now!" << std::endl;
-        std::abort();
+        SPDLOG_ERROR("Attempt to download several files");
+        throw std::runtime_error("No mitiple files right now!");
     }
 }
 

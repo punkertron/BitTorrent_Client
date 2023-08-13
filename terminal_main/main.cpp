@@ -73,8 +73,15 @@ int main(int argc, char **argv)
     else
         spdlog::set_level(spdlog::level::off);
 
-    TorrentClient tc(torrentPath.c_str(), downloadPath.c_str());
-    tc.run();
+    try
+    {
+        TorrentClient tc(torrentPath.c_str(), downloadPath.c_str());
+        tc.run();
+    }
+    catch (const std::runtime_error &e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
 
     return 0;
 }

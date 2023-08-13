@@ -9,6 +9,8 @@ a.out
 test.txt
 logs
 
+terminal_objs
+
 Qt/*
 !Qt/resources
 !Qt/main_Qt.cpp

@@ -19,6 +19,7 @@ class Window : public QWidget
     std::string downloadDir;
     std::string fileName;
     long long fileSize;
+    bool isError = false;
 
     QTextEdit *m_torrentPathText;
     QTextEdit *m_downloadDirText;

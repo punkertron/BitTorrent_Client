@@ -60,7 +60,7 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::decodeResponse(co
         {
             auto peers = std::get<bencode::dict>(dict["peers"]);
             std::cerr << "Not impemented!" << std::endl;  // TODO:
-            std::abort();
+            throw std::runtime_error("Many files support isn't implemented");
         }
         catch (...)
         {
