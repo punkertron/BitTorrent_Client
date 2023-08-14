@@ -13,10 +13,10 @@ class Window : public QWidget
 {
     Q_OBJECT
    private:
-    QCheckBox *m_cbLogs;
-    QPushButton *m_buttonTorrentPath;
-    QPushButton *m_buttonDownloadDir;
-    QPushButton *m_buttonStartDownload;
+    QCheckBox *cbLogs;
+    QPushButton *buttonTorrentPath;
+    QPushButton *buttonDownloadDir;
+    QPushButton *buttonStartDownload;
 
     std::string torrentPath;
     std::string downloadDir;
@@ -26,8 +26,8 @@ class Window : public QWidget
     bool isLogsSetupDone = false;
     bool isLogsEnanabled = false;
 
-    QTextEdit *m_torrentPathText;
-    QTextEdit *m_downloadDirText;
+    QTextEdit *torrentPathText;
+    QTextEdit *downloadDirText;
     QVBoxLayout *layout;
 
     QPushButton *newButtonObject(const char *buttonName, const QString &colour);

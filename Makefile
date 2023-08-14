@@ -1,5 +1,5 @@
 LIB_NAME		= libtorrent_core.a
-TERMIANL_NAME	= torrent_client
+TERMINAL_NAME	= torrent_client
 QT_NAME			= Torrent\ Client\ Qt
 
 # build libtorrent_core.a
@@ -49,13 +49,13 @@ LIBC		= ar rcs
 
 RM			= rm -rf
 
-all: ${LIB_NAME} ${TERMIANL_NAME} ${QT_NAME}
+all: ${LIB_NAME} ${TERMINAL_NAME} ${QT_NAME}
 
 ${LIB_NAME}: ${OBJS}
 	${LIBC} ${LIB_NAME} ${OBJS}
 
-${TERMIANL_NAME}: ${TERMINAL_OBJS}
-	${CXX} ${CXXFLAGS} ${INCLUDE} ${TERMINAL_OBJS} ${LIB_NAME} ${LDLIBS} -o ${TERMIANL_NAME}
+${TERMINAL_NAME}: ${TERMINAL_OBJS}
+	${CXX} ${CXXFLAGS} ${INCLUDE} ${TERMINAL_OBJS} ${LIB_NAME} ${LDLIBS} -o ${TERMINAL_NAME}
 
 ${QT_NAME}: ${QT_FILES}
 	cd ${QT_DIR};\
@@ -91,13 +91,13 @@ ${TERMINAL_OBJS_PATH}:
 
 clean:
 	${RM} ${OBJS_PATH} ${TERMINAL_OBJS_PATH}
-	make clean -C ${QT_DIR}
+	make clean -C ${QT_DIR} 2> /dev/null; true
 
 fclean: clean
 	${RM} ${LIB_NAME} ${TERMINAL_NAME} ${QT_NAME}
 	${RM} ${QT_DIR}/.qmake.stash ${QT_DIR}/Makefile ${QT_DIR}/${QT_NAME}.pro
 
-re: fclean | ${OBJS_PATH} ${TERMINAL_OBJS_PATH} ${TERMINAL_NAME}
+re: fclean all
 
 format:
 	clang-format -i ${SRCS_PATH}/* ${INC_DIR}/* \

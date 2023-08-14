@@ -4,6 +4,7 @@
 #include <thread>
 
 #include "PeersQueue.hpp"
+#include "PieceManager.hpp"
 #include "TorrentFileParser.hpp"
 
 class TorrentClient
@@ -11,7 +12,7 @@ class TorrentClient
    private:
     bool trackProgress;
     TorrentFileParser tfp;
-    const char* downloadPath;
+    PieceManager pieceManager;
     long long interval;
     long long complete;
     long long incomplete;

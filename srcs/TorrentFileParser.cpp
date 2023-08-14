@@ -48,6 +48,12 @@ TorrentFileParser::TorrentFileParser(const char* filePath) : SingleMultiFile(mul
         SPDLOG_CRITICAL("Something bad with torrent file parsing");
         throw std::runtime_error("Something bad with torrent file parsing");
     }
+
+    if (!IsSingle())
+    {
+        SPDLOG_ERROR("Attempt to download several files");
+        throw std::runtime_error("No mitiple files right now!");
+    }
 }
 
 const std::string& TorrentFileParser::getAnnounce() const

@@ -44,11 +44,11 @@ void Window::openTorrent()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Select Torrent File", "", "Torrent files (*.torrent)");
     SPDLOG_INFO("User picked torrent file: {}", filePath.toStdString());
+    torrentPath = filePath.toStdString();
     if (!filePath.isEmpty())
-    {
-        torrentPath = filePath.toStdString();
-        m_torrentPathText->setText(QString("Torrent: ") + QString(torrentPath.c_str()));
-    }
+        torrentPathText->setText(QString("Torrent: ") + QString(torrentPath.c_str()));
+    else
+        torrentPathText->setText("");
 }
 
 void Window::selectDirectory()
@@ -63,8 +63,8 @@ void Window::selectDirectory()
             downloadDir.push_back('/');
     }
     else
-        downloadDir = "./";
-    m_downloadDirText->setText(QString("Path: ") + QString(downloadDir.c_str()));
+        downloadDir = defaultDownloadPath();
+    downloadDirText->setText(QString("Path: ") + QString(downloadDir.c_str()));
 }
 
 static QTextEdit* newTextObject()
@@ -81,10 +81,10 @@ static QTextEdit* newTextObject()
 
 void Window::setCustomTextLines()
 {
-    m_torrentPathText = newTextObject();
+    torrentPathText = newTextObject();
 
-    m_downloadDirText = newTextObject();
-    m_downloadDirText->setText(QString("Path: ") + QString(downloadDir.c_str()));
+    downloadDirText = newTextObject();
+    downloadDirText->setText(QString("Path: ") + QString(downloadDir.c_str()));
 }
 
 QPushButton* Window::newButtonObject(const char* buttonName, const QString& colour)
@@ -99,32 +99,32 @@ QPushButton* Window::newButtonObject(const char* buttonName, const QString& colo
 
 void Window::setCustomButtons()
 {
-    m_buttonTorrentPath   = newButtonObject("Select Torrent file", "rgba(255, 190, 248, 1)");
-    m_buttonDownloadDir   = newButtonObject("Select directory to download", "rgba(255, 252, 172, 1)");
-    m_buttonStartDownload = newButtonObject("Start", "rgba(255, 183, 183, 1)");
+    buttonTorrentPath   = newButtonObject("Select Torrent file", "rgba(255, 190, 248, 1)");
+    buttonDownloadDir   = newButtonObject("Select directory to download", "rgba(255, 252, 172, 1)");
+    buttonStartDownload = newButtonObject("Start", "rgba(255, 183, 183, 1)");
 
-    m_buttonStartDownload->setIcon(QIcon(QCoreApplication::applicationDirPath() + QString("/Qt/resources/rocket.png")));
-    m_buttonStartDownload->setIconSize(QSize(30, 30));
+    buttonStartDownload->setIcon(QIcon(QCoreApplication::applicationDirPath() + QString("/Qt/resources/rocket.png")));
+    buttonStartDownload->setIconSize(QSize(30, 30));
 
-    QObject::connect(m_buttonTorrentPath, SIGNAL(clicked()), this, SLOT(openTorrent()));
-    QObject::connect(m_buttonDownloadDir, SIGNAL(clicked()), this, SLOT(selectDirectory()));
-    QObject::connect(m_buttonStartDownload, SIGNAL(clicked()), this, SLOT(startDownload()));
+    QObject::connect(buttonTorrentPath, SIGNAL(clicked()), this, SLOT(openTorrent()));
+    QObject::connect(buttonDownloadDir, SIGNAL(clicked()), this, SLOT(selectDirectory()));
+    QObject::connect(buttonStartDownload, SIGNAL(clicked()), this, SLOT(startDownload()));
 }
 
 void Window::setCustomLayout()
 {
     layout = new QVBoxLayout(this);
     layout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Fixed));
-    layout->addWidget(m_buttonTorrentPath, 0, Qt::AlignmentFlag::AlignCenter);
+    layout->addWidget(buttonTorrentPath, 0, Qt::AlignmentFlag::AlignCenter);
     layout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
-    layout->addWidget(m_torrentPathText, 0, Qt::AlignmentFlag::AlignCenter);
-    layout->addWidget(m_buttonDownloadDir, 0, Qt::AlignmentFlag::AlignCenter);
+    layout->addWidget(torrentPathText, 0, Qt::AlignmentFlag::AlignCenter);
+    layout->addWidget(buttonDownloadDir, 0, Qt::AlignmentFlag::AlignCenter);
     layout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
-    layout->addWidget(m_downloadDirText, 0, Qt::AlignmentFlag::AlignCenter);
+    layout->addWidget(downloadDirText, 0, Qt::AlignmentFlag::AlignCenter);
     layout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
-    layout->addWidget(m_buttonStartDownload, 0, Qt::AlignmentFlag::AlignCenter);
+    layout->addWidget(buttonStartDownload, 0, Qt::AlignmentFlag::AlignCenter);
     layout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Fixed));
-    layout->addWidget(m_cbLogs, 0, Qt::AlignmentFlag::AlignCenter);
+    layout->addWidget(cbLogs, 0, Qt::AlignmentFlag::AlignCenter);
     setLayout(layout);
 }
 
@@ -224,10 +224,6 @@ void Window::displayDownloadStatus()
 
     QObject::connect(returnBack, SIGNAL(clicked()), this, SLOT(returnBack()));
     setLayout(layout);
-
-    // reset torrent data
-    torrentPath = "";
-    fileName    = "";
 }
 
 void Window::startDownload()
@@ -240,9 +236,18 @@ void Window::startDownload()
         while (fileName == "" && !isError)  // wait until we recieve fileName from another thread
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-        clearLayout();
-        displayDownloadStatus();
-        isError = false;
+        if (!isError)
+        {
+            clearLayout();
+            displayDownloadStatus();
+        }
+        else
+            torrentPathText->setText("");
+
+        // reset torrent data
+        torrentPath = "";
+        fileName    = "";
+        isError     = false;
     }
     else
         QMessageBox::critical(this, "Error", "Provide a torrent file!");
@@ -261,12 +266,12 @@ void Window::clearLayout()
 
 void Window::setCheckBox()
 {
-    m_cbLogs = new QCheckBox("Enable logs (./logs/logs.txt)", this);
+    cbLogs = new QCheckBox("Enable logs (./logs/logs.txt)", this);
     if (isLogsEnanabled)
-        m_cbLogs->setCheckState(Qt::Checked);
+        cbLogs->setCheckState(Qt::Checked);
     else
-        m_cbLogs->setCheckState(Qt::Unchecked);
-    QObject::connect(m_cbLogs, &QCheckBox::stateChanged, this, &Window::enableDisableLogs);  // Not signal/slot?
+        cbLogs->setCheckState(Qt::Unchecked);
+    QObject::connect(cbLogs, &QCheckBox::stateChanged, this, &Window::enableDisableLogs);  // Not signal/slot?
 }
 
 void Window::enableDisableLogs()

@@ -21,14 +21,9 @@
 #endif
 
 TorrentClient::TorrentClient(const char* torrentPath, const char* downloadPath, bool trackProgress) :
-    trackProgress(trackProgress), tfp(torrentPath), downloadPath(downloadPath)
+    trackProgress(trackProgress), tfp(torrentPath), pieceManager(tfp, downloadPath)
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
-    if (!tfp.IsSingle())
-    {
-        SPDLOG_ERROR("Attempt to download several files");
-        throw std::runtime_error("No mitiple files right now!");
-    }
 }
 
 TorrentClient::~TorrentClient()
@@ -38,7 +33,6 @@ TorrentClient::~TorrentClient()
 
 void TorrentClient::run()
 {
-    PieceManager pieceManager(tfp, downloadPath);
     PeerRetriever p(std::string(PEER_ID), PORT, tfp, 0);
     std::vector<std::pair<std::string, long long> > peers(p.getPeers());
     for (auto peer : peers)
