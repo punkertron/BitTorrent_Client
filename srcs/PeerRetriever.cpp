@@ -64,6 +64,8 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
             curl_easy_cleanup(curl);
             curl = NULL;
             ++i;
+            if (i == 1'000'000)
+                break;
         }
         peers = decodeResponse(response);
     }
