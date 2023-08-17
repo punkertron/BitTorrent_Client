@@ -18,9 +18,6 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* out
     return totalSize;
 }
 
-#include <chrono>
-#include <thread>
-
 std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(const TorrentFileParser& tfp,
                                                                              long long bytesDownloaded)
 {
