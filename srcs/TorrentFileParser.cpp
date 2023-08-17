@@ -27,6 +27,16 @@ TorrentFileParser::TorrentFileParser(const char* filePath) : SingleMultiFile(mul
 
         try
         {
+            auto announce_list = std::get<bencode::list>(dict["announce-list"]);
+            fillAnnounceList(announce_list);
+        }
+        catch (...)
+        {
+            SPDLOG_INFO("No announce-list");
+        }
+
+        try
+        {
             std::get<multiFile>(SingleMultiFile).files = std::get<bencode::list>(info["files"]);
         }
         catch (...)
@@ -99,4 +109,24 @@ const bencode::list& TorrentFileParser::getFiles() const
 const std::string& TorrentFileParser::getInfoHash() const
 {
     return infoHash;
+}
+
+void TorrentFileParser::fillAnnounceList(const bencode::list& announce_list)
+{
+    for (const auto& ll : announce_list)
+    {
+        auto list = std::get<bencode::list>(ll);
+        for (const auto& l : list)
+            announceList.push_back(std::get<bencode::string>(l));
+    }
+}
+
+size_t TorrentFileParser::getAnnounce_listSize() const
+{
+    return announceList.size();
+}
+
+const std::string& TorrentFileParser::getAnnounce_listI(size_t i) const
+{
+    return announceList[i];
 }

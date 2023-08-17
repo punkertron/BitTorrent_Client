@@ -27,6 +27,9 @@ class TorrentFileParser
     bool isSingle = false;
     std::string infoHash;
 
+    std::vector<std::string> announceList;
+    void fillAnnounceList(const bencode::list& announce_list);
+
     std::variant<singleFile, multiFile> SingleMultiFile;  // TODO: add correct parsing of multiFile
 
    public:
@@ -47,6 +50,8 @@ class TorrentFileParser
     const std::string& getDirName() const;
     const bencode::list& getFiles() const;
     const std::string& getInfoHash() const;
+    size_t getAnnounce_listSize() const;
+    const std::string& getAnnounce_listI(size_t i) const;
 };
 
 #endif  // TORRENT_FILE_PARSER
