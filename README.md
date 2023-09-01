@@ -36,12 +36,12 @@ Developed on Debian 12.
 ### Command-line
 ![terminal_version](https://github.com/punkertron/Torrent_Client_CPP/assets/82904352/4c15d61f-56cb-43f4-9f55-37d254e40f2c)
 
-The program supports the following commandline options:
+The program supports the following command-line options:
 
 | Options | Alternative | Description                             | Default            |
 |---------|-------------|-----------------------------------------|--------------------|
 | -t      | --torrent   | Location of the .torrent                | REQUIRED           |
-| -d      | --directory | Where to save file                      | ~/Downloads (or current directory if ~/Downloads doesn't exists)           |
+| -d      | --directory | Where to save file                      | ~/Downloads (or current directory if ~/Downloads doesn't exist)           |
 | -l      | --logs      | Enable logs (./logs/logs.txt)           | false              |
 | -h      | --help      | Print arguments and their descriptions  |                    |
 
