@@ -82,6 +82,7 @@ static QTextEdit* newTextObject()
 void Window::setCustomTextLines()
 {
     torrentPathText = newTextObject();
+    torrentPathText->setMinimumWidth(300);
 
     downloadDirText = newTextObject();
     downloadDirText->setText(QString("Path: ") + QString(downloadDir.c_str()));

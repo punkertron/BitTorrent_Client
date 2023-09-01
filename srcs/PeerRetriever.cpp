@@ -1,6 +1,10 @@
 #include "PeerRetriever.hpp"
 
+#include <arpa/inet.h>
 #include <curl/curl.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #include "spdlog/spdlog.h"
 #include "utils.hpp"
@@ -50,16 +54,25 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
                               "&left=" + std::to_string(tfp.getLengthOne() - bytesDownloaded) + "&compact=1");
             SPDLOG_INFO("Query is {}", query);
 
-            curl_easy_setopt(curl, CURLOPT_URL, query.c_str());
-            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15);
-            curl_easy_setopt(curl, CURLOPT_USERAGENT, "TorrentClient");
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-            res = curl_easy_perform(curl);
-            if (res != CURLE_OK)
-                SPDLOG_DEBUG("CURL failed");
-            curl_easy_cleanup(curl);
-            curl = NULL;
+            if (query.size() > 3 && query.substr(0, 3) == "udp")
+            {
+                SPDLOG_INFO("Retrieve peers using CURL");
+                // TODO:
+            }
+            else
+            {
+                SPDLOG_INFO("Retrieve peers using CURL");
+                curl_easy_setopt(curl, CURLOPT_URL, query.c_str());
+                curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15);
+                curl_easy_setopt(curl, CURLOPT_USERAGENT, "TorrentClient");
+                curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+                curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+                res = curl_easy_perform(curl);
+                if (res != CURLE_OK)
+                    SPDLOG_DEBUG("CURL failed");
+                curl_easy_cleanup(curl);
+                curl = NULL;
+            }
             ++i;
             if (i == 1'000'000)
                 break;

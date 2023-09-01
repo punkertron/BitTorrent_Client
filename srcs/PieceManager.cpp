@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <iomanip>
@@ -17,7 +18,14 @@
 PieceManager::PieceManager(const TorrentFileParser& tfp, const char* downloadPath) :
     tfp(tfp), downloadPath(downloadPath), Pieces(initialisePieces())
 {
-    downloadedFile.open(downloadPath + tfp.getFileName(), std::ios::binary | std::ios::out);
+    std::string fileName = tfp.getFileName();
+    size_t pos           = fileName.find('/');
+    while (pos != std::string::npos)
+    {
+        fileName.replace(pos, 1, "_");
+        pos = fileName.find('/', pos + 1);
+    }
+    downloadedFile.open(downloadPath + fileName, std::ios::binary | std::ios::out);
     if (!downloadedFile.is_open())
     {
         SPDLOG_ERROR("Can't open {}{}", downloadPath, tfp.getFileName());
