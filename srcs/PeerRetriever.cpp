@@ -12,7 +12,7 @@
 PeerRetriever::PeerRetriever(const std::string& peerId, int port, const TorrentFileParser& tfp, long long bytesDownloaded) :
     port(port), fileSize(tfp.getLengthOne()), peerId(peerId)
 {
-    allPeers = std::move(retrievePeers(tfp, bytesDownloaded));
+    allPeers = retrievePeers(tfp, bytesDownloaded);
 }
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* output)

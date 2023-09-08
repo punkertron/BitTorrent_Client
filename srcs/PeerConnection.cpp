@@ -113,7 +113,7 @@ inline std::string PeerConnection::createHandshakeMessage() const
 
 void PeerConnection::performHandshake()
 {
-    std::string msg(std::move(createHandshakeMessage()));
+    std::string msg(createHandshakeMessage());
     sendData(sockfd, msg);
     std::string response = recieveData(sockfd, msg.size());
 
