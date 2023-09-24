@@ -29,12 +29,12 @@ Developed on Debian 12.
 ---
 
 ### Qt Version
-![QT_version](https://github.com/punkertron/Torrent_Client_CPP/assets/82904352/a28586e4-32f6-4984-abf5-d2feb4e02f33)
+![QT_version](assets/QT_version.gif)
 
 ---
 
 ### Command-line
-![terminal_version](https://github.com/punkertron/Torrent_Client_CPP/assets/82904352/4c15d61f-56cb-43f4-9f55-37d254e40f2c)
+![terminal_version](assets/terminal_version.gif)
 
 The program supports the following command-line options:
 
