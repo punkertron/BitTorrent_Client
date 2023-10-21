@@ -38,6 +38,7 @@ class PeerConnection
     PeerConnection()                                       = delete;
     PeerConnection& operator=(const PeerConnection& other) = delete;
     PeerConnection(const PeerConnection& other)            = delete;
+    PeerConnection& operator=(PeerConnection&& other)      = delete;
 
     void start();
 };

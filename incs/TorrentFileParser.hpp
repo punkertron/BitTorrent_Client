@@ -40,6 +40,7 @@ class TorrentFileParser
     TorrentFileParser()                                          = delete;
     TorrentFileParser& operator=(const TorrentFileParser& other) = delete;
     TorrentFileParser(TorrentFileParser&& other)                 = delete;
+    TorrentFileParser& operator=(TorrentFileParser&& other)      = delete;
 
     const std::string& getAnnounce() const;
     const long long& getPieceLength() const;

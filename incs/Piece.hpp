@@ -45,6 +45,7 @@ class Piece
     Piece& operator=(const Piece& other) = delete;
     Piece(const Piece& other)            = delete;
     Piece(Piece&& other)                 = delete;
+    Piece& operator=(Piece&& other)      = delete;
 
     bool isFull() const;
     bool isHashChecked(const std::string& dataToFile) const;

@@ -28,9 +28,10 @@ class PeerRetriever
     ~PeerRetriever()                                     = default;
     PeerRetriever& operator=(const PeerRetriever& other) = default;
 
-    PeerRetriever()                           = delete;
-    PeerRetriever(const PeerRetriever& other) = delete;
-    PeerRetriever(PeerRetriever&& other)      = delete;
+    PeerRetriever()                                 = delete;
+    PeerRetriever(const PeerRetriever& other)       = delete;
+    PeerRetriever(PeerRetriever&& other)            = delete;
+    PeerRetriever& operator=(PeerRetriever&& other) = default;
 
     std::vector<std::pair<std::string, long long> > retrievePeers(const TorrentFileParser& tfp, long long bytesDownloaded);
     const std::vector<std::pair<std::string, long long> >& getPeers() const;

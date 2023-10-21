@@ -29,6 +29,7 @@ class TorrentClient
     TorrentClient& operator=(const TorrentClient& other) = delete;
     TorrentClient(const TorrentClient& other)            = delete;
     TorrentClient(TorrentClient&& other)                 = delete;
+    TorrentClient& operator=(TorrentClient&& other)      = delete;
 
     void run();
 

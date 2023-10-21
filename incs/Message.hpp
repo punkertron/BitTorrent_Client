@@ -36,6 +36,7 @@ class Message
     Message& operator=(const Message& other) = delete;
     Message(const Message& other)            = delete;
     Message(Message&& other)                 = delete;
+    Message& operator=(Message&& other)      = delete;
 
     const std::string getMessageStr() const;
     bool isKeepAlive() const;

@@ -41,6 +41,7 @@ class PieceManager
     PieceManager& operator=(const PieceManager& other) = delete;
     PieceManager(const PieceManager& other)            = delete;
     PieceManager(PieceManager&& other)                 = delete;
+    PieceManager& operator=(PieceManager&& other)      = delete;
 
     void addPeerBitfield(const std::string& peerPeerId, const std::string& payload);
 
