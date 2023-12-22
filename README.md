@@ -19,8 +19,11 @@ The main goal of writing a multithreaded Torrent Client in C++ is to gain in-dep
 ---
 
 ### How To Build
-To build library (libtorrent_core.a) and two programs (command-line and Qt), simply use the `make` command in your terminal (you may have to install curl and libcrypto).
-
+To build library (libtorrent_core.a) and two programs (command-line and Qt), simply use the following command in your terminal (you may have to install curl, libcrypto and Qt5/Qt6):
+``` bash
+cmake -B build/ -S . && make -C build/ -j$(nproc)
+```
+Two programmes will appear in the `build/` directory:
 - **torrent_client** - command-line program.
 - **Torrent Client Qt** - graphical user interface (GUI).
 
