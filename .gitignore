@@ -15,7 +15,10 @@ Qt/*
 !Qt/main_Qt.cpp
 !Qt/Window.hpp
 !Qt/Window.cpp
+!Qt/resources.qrc
 
 libtorrent_core.a
 torrent_client
 Torrent\ Client\ Qt
+
+build

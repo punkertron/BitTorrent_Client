@@ -32,7 +32,7 @@ static const std::string defaultDownloadPath()
 Window::Window(QWidget* parent) : QWidget(parent), downloadDir(defaultDownloadPath())
 {
     setStyleSheet("background-color: rgba(249, 255, 250, 1);");
-    setWindowIcon(QIcon(QCoreApplication::applicationDirPath() + QString("/Qt/resources/torrent_logo.png")));
+    setWindowIcon(QIcon(":/resources/torrent_logo.png"));
     setWindowTitle("Torrent Client Qt");
     setMinimumSize(650, 350);
     resize(650, 350);
@@ -104,7 +104,7 @@ void Window::setCustomButtons()
     buttonDownloadDir   = newButtonObject("Select directory to download", "rgba(255, 252, 172, 1)");
     buttonStartDownload = newButtonObject("Start", "rgba(255, 183, 183, 1)");
 
-    buttonStartDownload->setIcon(QIcon(QCoreApplication::applicationDirPath() + QString("/Qt/resources/rocket.png")));
+    buttonStartDownload->setIcon(QIcon(":/resources/rocket.png"));
     buttonStartDownload->setIconSize(QSize(30, 30));
 
     QObject::connect(buttonTorrentPath, SIGNAL(clicked()), this, SLOT(openTorrent()));
