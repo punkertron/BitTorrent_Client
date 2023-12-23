@@ -52,19 +52,37 @@ int main(int argc, char **argv)
         return 3;
     }
 
+    std::string logPath;
     if (enableLogs)
     {
-        // clean old logs
-        try
+        char exePath[PATH_MAX];
+        ssize_t len = readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
+        if (len != -1)
         {
-            std::ofstream ofs("logs/logs.txt", std::ios::trunc);
-            ofs.close();
-        }
-        catch (...)  // do nothing?
-        {
+            exePath[len] = '\0';
+
+            // Extracting the directory from the executable path
+            const std::string exeDir = std::string(exePath).substr(0, std::string(exePath).find_last_of('/'));
+            const std::string logDir = exeDir + "/logs";
+            logPath = logDir + "/logs.txt";
+            
+            if (!std::filesystem::exists(logDir))
+            {
+                std::filesystem::create_directory(logDir);
+            }
+
+            // clean old logs
+            try
+            {
+                std::ofstream ofs(logPath, std::ios::trunc);
+                ofs.close();
+            }
+            catch (...)  // do nothing?
+            {
+            }
         }
 
-        auto logger = spdlog::basic_logger_mt("logger", "logs/logs.txt");
+        auto logger = spdlog::basic_logger_mt("logger", logPath);
         logger->flush_on(spdlog::level::info);
         spdlog::set_default_logger(logger);
         spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%-5l] [%-5t] [%s/%!]\t%v");

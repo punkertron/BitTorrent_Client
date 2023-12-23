@@ -279,11 +279,26 @@ void Window::enableDisableLogs()
 {
     if (!isLogsSetupDone)
     {
-        const std::string filePath((QCoreApplication::applicationDirPath() + QString("/logs/logs.txt")).toStdString());
-        std::filesystem::resize_file(filePath, 0);
+        const std::string logDir((QCoreApplication::applicationDirPath() + QString("/logs")).toStdString());
+        const std::string logPath(logDir + "/logs.txt");
+
+        if (!std::filesystem::exists(logDir))
+        {
+            std::filesystem::create_directory(logDir);
+        }
+
+        // clean old logs
+        try
+        {
+            std::ofstream ofs(logPath, std::ios::trunc);
+            ofs.close();
+        }
+        catch (...)  // do nothing?
+        {
+        }
 
         spdlog::set_level(spdlog::level::info);
-        auto logger = spdlog::basic_logger_mt("logger", "logs/logs.txt");
+        auto logger = spdlog::basic_logger_mt("logger", logPath);
         logger->flush_on(spdlog::level::info);
         spdlog::set_default_logger(logger);
         spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%-5l] [%-5t] [%s/%!]\t%v");
