@@ -56,7 +56,7 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::retrievePeers(con
 
             if (query.size() > 3 && query.substr(0, 3) == "udp")
             {
-                SPDLOG_INFO("Retrieve peers using CURL");
+                SPDLOG_INFO("Retrieve peers using UDP");
                 // TODO:
             }
             else
