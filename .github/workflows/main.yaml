@@ -3,10 +3,11 @@ name: C++ CI
 on:
   push:
       branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
