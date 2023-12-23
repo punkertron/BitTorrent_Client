@@ -93,9 +93,16 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::decodeResponse(co
         interval  = std::get<bencode::integer>(dict["interval"]);
         try
         {
-            auto peers = std::get<bencode::dict>(dict["peers"]);
-            std::cerr << "Not impemented!" << std::endl;  // TODO:
-            throw std::runtime_error("Many files support isn't implemented");
+            auto peers = std::get<bencode::list>(dict["peers"]);
+
+            for (const auto& peer : peers)
+            {
+                bencode::dict peerDict    = std::get<bencode::dict>(peer);
+                std::string peerIPAddress = std::get<bencode::string>(peerDict["ip"]);
+                // std::string peerId = std::get<bencode::string>(peerDict["peer id"]);
+                long long peerPort = std::get<bencode::integer>(peerDict["port"]);
+                result.push_back(std::make_pair(peerIPAddress, peerPort));
+            }
         }
         catch (...)
         {
@@ -116,7 +123,7 @@ std::vector<std::pair<std::string, long long> > PeerRetriever::decodeResponse(co
     }
     catch (...)
     {
-        // SPDLOG_ERROR("No peers from tracker");
+        SPDLOG_ERROR("No peers from tracker OR some other parsing error");
     }
     SPDLOG_INFO("Amount of peers: {}", result.size());
     return result;
