@@ -15,4 +15,4 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y g++ cmake make libgl1-mesa-dev libglvnd-dev qt6-base-dev clang-format curl libcurl4-openssl-dev libcrypto++-dev
 
     - name: Build
-      run: cmake -B build/ -S . && make -C build/ -j$(nproc)
+      run: make #cmake -B build/ -S . && make -C build/ -j$(nproc)
