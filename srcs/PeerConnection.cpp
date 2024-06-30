@@ -45,7 +45,7 @@ void PeerConnection::start()
         {
             if (pieceManagerPtr->isComplete())
                 return;
-            std::this_thread::sleep_for(std::chrono::seconds(3));
+            std::this_thread::sleep_for(std::chrono::seconds(4));
         }
 
         try

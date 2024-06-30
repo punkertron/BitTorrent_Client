@@ -21,17 +21,19 @@ class PieceManager
     int totalDownloaded = 0;
     std::unordered_map<std::string, std::vector<bool> > peerBitfield;  // vector<bool> is efficient
     std::vector<std::unique_ptr<Piece> > Pieces;
+    std::string downloadFilePath;
     std::ofstream downloadedFile;
 
-    std::chrono::time_point<std::chrono::steady_clock> startTime =
+    const std::chrono::time_point<std::chrono::steady_clock> startTime =
         std::chrono::steady_clock::now();  // start of the downloading
+    float lastCheckFileSize{0.0f};         // bytes. FIXME: It's not good to store in float
 
     std::mutex mutex;
     std::mutex mutexWrite;
 
     std::vector<std::unique_ptr<Piece> > initialisePieces();
     void writeDataToFile(int index, const std::string& dataToFile);
-    void display(double n, long long fileSize, int lengthOfSize);
+    void display(const float currentFileSize, const double n, const int lengthOfSize);
 
    public:
     explicit PieceManager(const TorrentFileParser& tfp, const char* downloadPath);
@@ -51,6 +53,7 @@ class PieceManager
 
     bool isComplete();
     void trackProgress();
+    void trackSpeed();
 };
 
 #endif  // PIECE_MANAGER_HPP

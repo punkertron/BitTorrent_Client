@@ -12,7 +12,7 @@
 #include "spdlog/spdlog.h"
 
 #ifndef AMOUNT_HASH_SYMBOLS
-#define AMOUNT_HASH_SYMBOLS 48
+#define AMOUNT_HASH_SYMBOLS 37
 #endif
 
 PieceManager::PieceManager(const TorrentFileParser& tfp, const char* downloadPath) :
@@ -25,7 +25,8 @@ PieceManager::PieceManager(const TorrentFileParser& tfp, const char* downloadPat
         fileName.replace(pos, 1, "_");
         pos = fileName.find('/', pos + 1);
     }
-    downloadedFile.open(downloadPath + fileName, std::ios::binary | std::ios::out);
+    downloadFilePath = downloadPath + fileName;
+    downloadedFile.open(downloadFilePath, std::ios::binary | std::ios::out);
     if (!downloadedFile.is_open())
     {
         SPDLOG_ERROR("Can't open {}{}", downloadPath, tfp.getFileName());
@@ -168,10 +169,14 @@ void PieceManager::addToBitfield(const std::string& peerPeerId, const std::strin
     peerBitfield[peerPeerId][bitPos] = true;
 }
 
-void PieceManager::display(double n, long long fileSize, int lengthOfSize)
+void PieceManager::display(const float currentFileSize, const double n, const int lengthOfSize)
 {
+    auto diff   = currentFileSize - lastCheckFileSize;
+    float speed = diff / 1'048'576.0;
+
     std::cout << " [" << std::setw(5) << std::fixed << std::setprecision(1) << n << "%]" << '[' << std::setw(lengthOfSize)
-              << std::fixed << std::setprecision(1) << fileSize / 100.0 * n / 1'048'576 << "Mb]" << '[';
+              << std::fixed << std::setprecision(1) << currentFileSize / 1'048'576 << "Mb]" << '[' << std::setw(4)
+              << std::fixed << std::setprecision(1) << speed << "Mb/s][";
     int i = 0;
     for (; i < n * AMOUNT_HASH_SYMBOLS / 100.0; ++i)
         std::cout << '#';
@@ -208,18 +213,23 @@ void PieceManager::trackProgress()
     std::string fileName(tfp.getFileName());
     long long fileSize = tfp.getLengthOne();
     int lengthOfSize   = getLength(fileSize / 1'048'576) + 2;
-    std::string firstLastLine(AMOUNT_HASH_SYMBOLS + 25 + lengthOfSize, '-');
+    std::string firstLastLine(AMOUNT_HASH_SYMBOLS + 35 + lengthOfSize, '-');
     std::cout << firstLastLine << "\nFile: " << tfp.getFileName() << "\nDirectory: " << downloadPath << std::endl;
     while (!isComplete())
     {
-        mutex.lock();
-        double downloadPercent = 100.0 * totalDownloaded / totalPieces;
-        mutex.unlock();
-        display(downloadPercent, fileSize, lengthOfSize);
+        float downloadPercent = 100.0 * totalDownloaded / totalPieces;
+        float currentFileSize = fileSize / 100.0 * downloadPercent;
+        display(currentFileSize, downloadPercent, lengthOfSize);
+        lastCheckFileSize = currentFileSize;
     }
     std::cout << " [100.0%]"
               << "[" << std::fixed << std::setprecision(1) << fileSize * 1.0 / 1'048'576 << "Mb]" << '[';
-    for (int i = 0; i < AMOUNT_HASH_SYMBOLS; ++i)
+    for (int i = 0; i < AMOUNT_HASH_SYMBOLS + 10; ++i)
         std::cout << '#';
     std::cout << ']' << "\nDownload complete!\n" << firstLastLine << std::endl;
+}
+
+void PieceManager::trackSpeed()
+{
+    ;
 }

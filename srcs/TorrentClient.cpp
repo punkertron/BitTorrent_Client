@@ -17,7 +17,7 @@
 #endif
 
 #ifndef THREAD_NUM
-#define THREAD_NUM 15
+#define THREAD_NUM 20
 #endif
 
 TorrentClient::TorrentClient(const char* torrentPath, const char* downloadPath, bool trackProgress) :
@@ -70,7 +70,7 @@ void TorrentClient::run()
             for (auto peer : peers)
                 peersQueue.push_back(peer);
         }
-        std::this_thread::sleep_for(std::chrono::seconds(3));
+        std::this_thread::sleep_for(std::chrono::seconds(4));
     }
 
     for (auto& thr : threads)
