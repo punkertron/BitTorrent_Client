@@ -67,10 +67,10 @@ void TorrentClient::run()
             lastUpdate = std::chrono::steady_clock::now();
             p          = PeerRetriever(std::string(PEER_ID), PORT, tfp, 0);
             peers      = p.getPeers();
-            for (auto peer : peers)
+            for (const auto& peer : peers)
                 peersQueue.push_back(peer);
         }
-        std::this_thread::sleep_for(std::chrono::seconds(4));
+        std::this_thread::sleep_for(std::chrono::seconds(7));
     }
 
     for (auto& thr : threads)

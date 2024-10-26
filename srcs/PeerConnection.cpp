@@ -45,7 +45,7 @@ void PeerConnection::start()
         {
             if (pieceManagerPtr->isComplete())
                 return;
-            std::this_thread::sleep_for(std::chrono::seconds(4));
+            std::this_thread::sleep_for(std::chrono::seconds(7));
         }
 
         try
@@ -89,6 +89,7 @@ void PeerConnection::start()
         catch (const std::runtime_error& e)
         {
             SPDLOG_ERROR("PeerIp = {}\tPeerPort = {}\tError: {}", peer.first, peer.second, e.what());
+            peers->reportBadPeer(peer);
             if (sockfd > 0)
                 close(sockfd);
             sockfd = -1;
